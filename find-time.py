@@ -6,6 +6,8 @@ from google.appengine.ext import ndb
 
 import jinja2
 import webapp2
+import datetime
+import DatabaseStructures
 
 DEFAULT_GUESTBOOK_NAME = 'Default Guestbook'
 
@@ -39,52 +41,6 @@ class Greeting(ndb.Model):
     content = ndb.StringProperty(indexed=False)
     date = ndb.DateTimeProperty(auto_now_add=True)
 
-# find-time classes
-class Event(ndb.Model):
-    """Individual time block (30 min minimum) to be stored in calendars"""
-    beginning_day = ndb.DateProperty(indexed=True)
-    beginning_time = ndb.TimeProperty(indexed=True)
-    ending_day = ndb.DateProperty(indexed=True)
-    ending_time = ndb.TimeProperty(indexed=True)
-    is_free_time = ndb.BooleanProperty(default=False)
-    event_name = ndb.StringProperty(indexed=False)
-    event_location = ndb.StringProperty(indexed=False)
-    event_description = ndb.TextProperty(indexed=False)
-
-
-class TemporaryCalendar(ndb.Model):
-    events = ndb.StructuredProperty(Event, repeated=True)
-
-
-class WeeklyRecurringSchedule(ndb.Model):
-    """Model for a 7 day calendar for a particular user"""
-    sunday = ndb.StructuredProperty(Event, repeated=True)
-    monday = ndb.StructuredProperty(Event, repeated=True)
-    wednesday = ndb.StructuredProperty(Event, repeated=True)
-    thursday = ndb.StructuredProperty(Event, repeated=True)
-    friday = ndb.StructuredProperty(Event, repeated=True)
-    saturday = ndb.StructuredProperty(Event, repeated=True)
-
-
-class User(ndb.Model):
-    """Model for representing an individual user."""
-    unique_user_name = ndb.StringProperty(indexed=True)
-    display_name = ndb.StringProperty(indexed=False)
-    email_address = ndb.StringProperty(indexed=False)
-    user_nonrecurring_calendar = ndb.StructuredProperty(TemporaryCalendar, repeated=False)
-    user_recurring_calendar = ndb.StructuredProperty(WeeklyRecurringSchedule, repeated=False)
-    friends = ndb.StringProperty(indexed=False, repeated=True)
-    # notifications = ndb.StructuredProperty(Notification, repeated=True)
-
-
-class Notification(ndb.Model):
-    notification_type = ndb.StringProperty(indexed=True)
-    user_notified = ndb.StructuredProperty(User)
-    user_instigating = ndb.StructuredProperty(User)
-    notification_body = ndb.StringProperty(indexed=False)
-    event_associated = ndb.StructuredProperty(Event, default=None)
-    title = ndb.StringProperty(indexed=False)
-
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
@@ -116,13 +72,10 @@ class MainPage(webapp2.RequestHandler):
             'url': url,
             'url_linktext': url_linktext,
         }
-        #
-        # user = User()
-        # user.display_name = "Matt"
-        # user.put()
 
         template = JINJA_ENVIRONMENT.get_template('index.html')
         self.response.write(template.render(template_values))
+
 
 class Guestbook(webapp2.RequestHandler):
     def post(self):
@@ -147,6 +100,43 @@ class Guestbook(webapp2.RequestHandler):
         self.redirect('/?' + urllib.urlencode(query_params))
 
 
+DAYSOFTHEWEEK = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
+"""The Calendar class is generated dynamically based on events in the datastore. This object will
+    provide functionality to make the javascript display simpler"""
+class Calendar:
+    daily_events = {}
+
+    def __init__(self, user):
+        for day in DAYSOFTHEWEEK:
+            self.daily_events[day] = []
+
+        recurring = user.user_recurring_calendar
+        self.daily_events['monday'].append(recurring.monday.ordered())
+        self.daily_events['tuesday'].append(recurring.tuesday.ordered())
+        self.daily_events['wednesday'].append(recurring.wednesday.ordered())
+        self.daily_events['thursday'].append(recurring.thursday.ordered())
+        self.daily_events['friday'].append(recurring.friday.ordered())
+        self.daily_events['saturday'].append(recurring.saturday.ordered())
+        self.daily_events['sunday'].append(recurring.sunday.ordered())
+
+        nonrecurring = user.user_nonrecurring_calendar
+        for event in nonrecurring.events:
+            day = DAYSOFTHEWEEK[event.beginning_day.weekday()]
+            self.daily_events[day].append(event)
+
+    # more functionality to be added to this class based on javascript requirements
+
+
+class ProfilePage(webapp2.RequestHandler):
+    def get(self):
+        user = self.request.get("user")
+        one_week_cal = Calendar(user)
+
+        template = JINJA_ENVIRONMENT.get_template('Profile.html')
+        self.response.write(template.render({"calendar": one_week_cal}))
+
+
 class EventPage(webapp2.RequestHandler):
     def get(self):
         template = JINJA_ENVIRONMENT.get_template('EventCreator.html')
@@ -155,7 +145,7 @@ class EventPage(webapp2.RequestHandler):
 
 class EventCreator(webapp2.RequestHandler):
     def post(self):
-        event = Event()
+        event = DatabaseStructures.Event()
         event.event_name = self.request.get("title")
         event.event_location = self.request.get("location")
         event.event_description = self.request.get("description")
@@ -175,7 +165,7 @@ class LoginPage(webapp2.RequestHandler):
 
 class Login(webapp2.RequestHandler):
     def get(self):
-        user = User()
+        user = DatabaseStructures.User()
         user.unique_user_name = self.request.get("entered_username")
         user.put()
 
@@ -187,7 +177,7 @@ class Login(webapp2.RequestHandler):
 
 class Signup(webapp2.RequestHandler):
     def get(self):
-        user = User()
+        user = DatabaseStructures.User()
         user.unique_user_name = self.request.get("entered_username")
         user.put()
 
