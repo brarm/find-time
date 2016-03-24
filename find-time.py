@@ -46,15 +46,24 @@ class Event(ndb.Model):
     beginning_time = ndb.TimeProperty(indexed=True)
     ending_day = ndb.DateProperty(indexed=True)
     ending_time = ndb.TimeProperty(indexed=True)
-    is_free_time = ndb.BooleanProperty(default=True)
+    is_free_time = ndb.BooleanProperty(default=False)
     event_name = ndb.StringProperty(indexed=False)
     event_location = ndb.StringProperty(indexed=False)
     event_description = ndb.TextProperty(indexed=False)
 
 
-class Calendar(ndb.Model):
-    """Model for a 7 day calendar for a particular user"""
+class TemporaryCalendar(ndb.Model):
     events = ndb.StructuredProperty(Event, repeated=True)
+
+
+class WeeklyRecurringSchedule(ndb.Model):
+    """Model for a 7 day calendar for a particular user"""
+    sunday = ndb.StructuredProperty(Event, repeated=True)
+    monday = ndb.StructuredProperty(Event, repeated=True)
+    wednesday = ndb.StructuredProperty(Event, repeated=True)
+    thursday = ndb.StructuredProperty(Event, repeated=True)
+    friday = ndb.StructuredProperty(Event, repeated=True)
+    saturday = ndb.StructuredProperty(Event, repeated=True)
 
 
 class User(ndb.Model):
@@ -62,7 +71,8 @@ class User(ndb.Model):
     unique_user_name = ndb.StringProperty(indexed=True)
     display_name = ndb.StringProperty(indexed=False)
     email_address = ndb.StringProperty(indexed=False)
-    user_calendar = ndb.StructuredProperty(Calendar, repeated=False)
+    user_nonrecurring_calendar = ndb.StructuredProperty(TemporaryCalendar, repeated=False)
+    user_recurring_calendar = ndb.StructuredProperty(WeeklyRecurringSchedule, repeated=False)
     friends = ndb.StringProperty(indexed=False, repeated=True)
     # notifications = ndb.StructuredProperty(Notification, repeated=True)
 
