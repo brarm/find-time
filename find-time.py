@@ -39,6 +39,42 @@ class Greeting(ndb.Model):
     content = ndb.StringProperty(indexed=False)
     date = ndb.DateTimeProperty(auto_now_add=True)
 
+# find-time classes
+class Event(ndb.Model):
+    """Individual time block (30 min minimum) to be stored in calendars"""
+    beginning_day = ndb.DateProperty(indexed=True)
+    beginning_time = ndb.TimeProperty(indexed=True)
+    ending_day = ndb.DateProperty(indexed=True)
+    ending_time = ndb.TimeProperty(indexed=True)
+    is_free_time = ndb.BooleanProperty(default=True)
+    event_name = ndb.StringProperty(indexed=False)
+    event_location = ndb.StringProperty(indexed=False)
+    event_description = ndb.TextProperty(indexed=False)
+
+
+class Calendar(ndb.Model):
+    """Model for a 7 day calendar for a particular user"""
+    events = ndb.StructuredProperty(Event, repeated=True)
+
+
+class User(ndb.Model):
+    """Model for representing an individual user."""
+    unique_user_name = ndb.StringProperty(indexed=True)
+    display_name = ndb.StringProperty(indexed=False)
+    email_address = ndb.StringProperty(indexed=False)
+    user_calendar = ndb.StructuredProperty(Calendar, repeated=False)
+    friends = ndb.StringProperty(indexed=False, repeated=True)
+    # notifications = ndb.StructuredProperty(Notification, repeated=True)
+
+
+class Notification(ndb.Model):
+    notification_type = ndb.StringProperty(indexed=True)
+    user_notified = ndb.StructuredProperty(User)
+    user_instigating = ndb.StructuredProperty(User)
+    notification_body = ndb.StringProperty(indexed=False)
+    event_associated = ndb.StructuredProperty(Event, default=None)
+    title = ndb.StringProperty(indexed=False)
+
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
@@ -70,6 +106,10 @@ class MainPage(webapp2.RequestHandler):
             'url': url,
             'url_linktext': url_linktext,
         }
+        #
+        # user = User()
+        # user.display_name = "Matt"
+        # user.put()
 
         template = JINJA_ENVIRONMENT.get_template('index.html')
         self.response.write(template.render(template_values))
