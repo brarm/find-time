@@ -146,10 +146,12 @@ class Guestbook(webapp2.RequestHandler):
         query_params = {'guestbook_name': guestbook_name}
         self.redirect('/?' + urllib.urlencode(query_params))
 
+
 class EventPage(webapp2.RequestHandler):
     def get(self):
         template = JINJA_ENVIRONMENT.get_template('EventCreator.html')
         self.response.write(template.render())
+
 
 class EventCreator(webapp2.RequestHandler):
     def post(self):
@@ -164,9 +166,42 @@ class EventCreator(webapp2.RequestHandler):
         query_params = {'guestbook_name': guestbook_name}
         self.redirect('/?' + urllib.urlencode(query_params))
 
+
+class LoginPage(webapp2.RequestHandler):
+    def get(self):
+        template = JINJA_ENVIRONMENT.get_template('SignupLogin.html')
+        self.response.write(template.render())
+
+
+class Login(webapp2.RequestHandler):
+    def get(self):
+        user = User()
+        user.unique_user_name = self.request.get("entered_username")
+        user.put()
+
+        guestbook_name = self.request.get('guestbook_name',
+                                          DEFAULT_GUESTBOOK_NAME)
+        query_params = {'guestbook_name': guestbook_name}
+        self.redirect('/?' + urllib.urlencode(query_params))
+
+
+class Signup(webapp2.RequestHandler):
+    def get(self):
+        user = User()
+        user.unique_user_name = self.request.get("entered_username")
+        user.put()
+
+        guestbook_name = self.request.get('guestbook_name',
+                                          DEFAULT_GUESTBOOK_NAME)
+        query_params = {'guestbook_name': guestbook_name}
+        self.redirect('/?' + urllib.urlencode(query_params))
+
 app = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/sign', Guestbook),
     ('/event_page', EventPage),
     ('/create_event', EventCreator),
+    ('/login_page', LoginPage),
+    ('/login', Login),
+    ('/signup', Signup),
 ], debug=True)
