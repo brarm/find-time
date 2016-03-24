@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+      <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+    <title> Event Creation Page</title>
+    Event Creation Page <br><br>
+</head>
+<body>
+    <form action="/create_event" method="post">
+        Title: <div><textarea name="title" rows="1" cols="30"></textarea></div>
+        Location: <div><textarea name="location" rows="1" cols="30"></textarea></div>
+        Description: <div><textarea name="description" rows="5" cols="30"></textarea></div>
+        Begins: <div><select name="begin_time">
+            <option value="today">Today</option>
+            <option value="tomorrow">Tomorrow</option>
+        </select></div>
+        Ends: <div><select name="end_time">
+            <option value="today">Today</option>
+            <option value="tomorrow">Tomorrow</option>
+        </select></div>
+        <div><input type="submit" value="Create Event"></div>
+    </form>
+</body>
+</html>

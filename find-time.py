@@ -146,7 +146,27 @@ class Guestbook(webapp2.RequestHandler):
         query_params = {'guestbook_name': guestbook_name}
         self.redirect('/?' + urllib.urlencode(query_params))
 
+class EventPage(webapp2.RequestHandler):
+    def get(self):
+        template = JINJA_ENVIRONMENT.get_template('EventCreator.html')
+        self.response.write(template.render())
+
+class EventCreator(webapp2.RequestHandler):
+    def post(self):
+        event = Event()
+        event.event_name = self.request.get("title")
+        event.event_location = self.request.get("location")
+        event.event_description = self.request.get("description")
+        event.put()
+
+        guestbook_name = self.request.get('guestbook_name',
+                                          DEFAULT_GUESTBOOK_NAME)
+        query_params = {'guestbook_name': guestbook_name}
+        self.redirect('/?' + urllib.urlencode(query_params))
+
 app = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/sign', Guestbook),
+    ('/event_page', EventPage),
+    ('/create_event', EventCreator),
 ], debug=True)
