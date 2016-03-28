@@ -32,6 +32,16 @@
 
     <a href="{{ url|safe }}">{{ url_linktext }}</a>
 
+
+    <hr><br><br>
+    Manually create new user <br><br>
+    <form action="/create_user" method="post">
+      User name: <div><textarea name="user_name" rows="1" cols="60"></textarea></div>
+      Display name: <div><textarea name="display_name" rows="1" cols="60"></textarea></div>
+      Email: <div><textarea name="email" rows="1" cols="60"></textarea></div>
+      <div><input type="submit" value="Create User"></div>
+    </form>
+
   </body>
 </html>
 {% endautoescape %}
