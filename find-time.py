@@ -114,24 +114,24 @@ class Calendar:
     def __init__(self, user):
         for day in DAYSOFTHEWEEK:
             self.daily_events[day] = []
-        logging.warning("user is" + user + " and has type: " + str(type(user)))
+        logging.warning("user is" + str(user.unique_user_name) + " and has type: " + str(type(user)))
 
         if user.user_recurring_calendar is None:
             user.user_recurring_calendar = DatabaseStructures.WeeklyRecurringSchedule()
 
         recurring = user.user_recurring_calendar
 
-        self.daily_events['monday'].append(recurring.monday.ordered())
-        self.daily_events['tuesday'].append(recurring.tuesday.ordered())
-        self.daily_events['wednesday'].append(recurring.wednesday.ordered())
-        self.daily_events['thursday'].append(recurring.thursday.ordered())
-        self.daily_events['friday'].append(recurring.friday.ordered())
-        self.daily_events['saturday'].append(recurring.saturday.ordered())
-        self.daily_events['sunday'].append(recurring.sunday.ordered())
+        self.daily_events['monday'].append(recurring.monday)
+        self.daily_events['tuesday'].append(recurring.tuesday)
+        self.daily_events['wednesday'].append(recurring.wednesday)
+        self.daily_events['thursday'].append(recurring.thursday)
+        self.daily_events['friday'].append(recurring.friday)
+        self.daily_events['saturday'].append(recurring.saturday)
+        self.daily_events['sunday'].append(recurring.sunday)
 
         nonrecurring = user.user_nonrecurring_calendar
         for event in nonrecurring.events:
-            day = DAYSOFTHEWEEK[event.beginning_day.weekday()]
+            day = event.beginning_day
             self.daily_events[day].append(event)
 
     # more functionality to be added to this class based on javascript requirements
@@ -141,15 +141,26 @@ class ProfilePage(webapp2.RequestHandler):
     def get(self):
         user = self.request.get("user_name")
         one_week_cal = None
+        if isinstance(user, unicode):
+            user = str(user)
+
         if isinstance(user, str):
             try:
                 u = DatabaseStructures.User.query(DatabaseStructures.User.unique_user_name == user).fetch(1)
-                one_week_cal = Calendar(u)
-            except Exception:
+                user_obj = None
+                for v in u:
+                    user_obj = v
+                logging.error(str(type(user_obj)))
+                one_week_cal = Calendar(user_obj)
+                logging.error("1")
+            except Exception as e:
+                logging.error(str(type(e)))
+                logging.error(str(e))
                 logging.error("User not found in the database: " + user)
                 one_week_cal = None
         elif isinstance(user, DatabaseStructures.User):
             one_week_cal = Calendar(user)
+            logging.error("2")
 
         template_values = {"calendar": one_week_cal,
                            "user_name": user,
