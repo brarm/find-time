@@ -10,9 +10,11 @@ from google.appengine.ext import ndb
 
 class Event(ndb.Model):
     """Individual time block (30 min minimum) to be stored in calendars"""
-    beginning_day = ndb.DateProperty(indexed=True)
+    # beginning_day = ndb.DateProperty(indexed=True)
+    beginning_day = ndb.StringProperty(indexed=True)
     beginning_time = ndb.TimeProperty(indexed=True)
-    ending_day = ndb.DateProperty(indexed=True)
+    # ending_day = ndb.DateProperty(indexed=True)
+    ending_day = ndb.StringProperty(indexed=True)
     ending_time = ndb.TimeProperty(indexed=True)
     is_free_time = ndb.BooleanProperty(default=False)
     event_name = ndb.StringProperty(indexed=False)
@@ -28,6 +30,7 @@ class WeeklyRecurringSchedule(ndb.Model):
     """Model for a 7 day calendar for a particular user"""
     sunday = ndb.StructuredProperty(Event, repeated=True)
     monday = ndb.StructuredProperty(Event, repeated=True)
+    tuesday = ndb.StructuredProperty(Event, repeated=True)
     wednesday = ndb.StructuredProperty(Event, repeated=True)
     thursday = ndb.StructuredProperty(Event, repeated=True)
     friday = ndb.StructuredProperty(Event, repeated=True)
