@@ -273,6 +273,7 @@ class Signup(webapp2.RequestHandler):
         query_params = {'guestbook_name': guestbook_name}
         self.redirect('/?' + urllib.urlencode(query_params))
 
+
 app = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/profile', ProfilePage),
