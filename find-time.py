@@ -9,6 +9,7 @@ import webapp2
 import datetime
 import DatabaseStructures
 import random
+import logging
 
 DEFAULT_GUESTBOOK_NAME = 'Default Guestbook'
 
@@ -113,8 +114,13 @@ class Calendar:
     def __init__(self, user):
         for day in DAYSOFTHEWEEK:
             self.daily_events[day] = []
+        logging.warning("user is" + user + " and has type: " + str(type(user)))
+
+        if user.user_recurring_calendar is None:
+            user.user_recurring_calendar = DatabaseStructures.WeeklyRecurringSchedule()
 
         recurring = user.user_recurring_calendar
+
         self.daily_events['monday'].append(recurring.monday.ordered())
         self.daily_events['tuesday'].append(recurring.tuesday.ordered())
         self.daily_events['wednesday'].append(recurring.wednesday.ordered())
@@ -133,11 +139,23 @@ class Calendar:
 
 class ProfilePage(webapp2.RequestHandler):
     def get(self):
-        user = self.request.get("user")
-        one_week_cal = Calendar(user)
+        user = self.request.get("user_name")
+        one_week_cal = None
+        if isinstance(user, str):
+            try:
+                u = DatabaseStructures.User.query(DatabaseStructures.User.unique_user_name == user).fetch(1)
+                one_week_cal = Calendar(u)
+            except Exception:
+                logging.error("User not found in the database: " + user)
+                one_week_cal = None
+        elif isinstance(user, DatabaseStructures.User):
+            one_week_cal = Calendar(user)
 
+        template_values = {"calendar": one_week_cal,
+                           "user_name": user,
+                           }
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
-        self.response.write(template.render({"calendar": one_week_cal}))
+        self.response.write(template.render(template_values))
 
 
 class CreateUser(webapp2.RequestHandler):
@@ -162,7 +180,7 @@ class CreateUser(webapp2.RequestHandler):
                                               ending_time=datetime.datetime.now().time().replace(hour=10),
                                               event_name=day + '_test' + str(j),
                                               event_location='this is a place',
-                                              event_description='booty',
+                                              event_description='description',
                                               is_free_time=False)
                 rec_events.append(ev)
         nonrec_events = []
@@ -174,7 +192,7 @@ class CreateUser(webapp2.RequestHandler):
                                               ending_time=datetime.datetime.now().time().replace(hour=10),
                                               event_name=DAYSOFTHEWEEK[i%6] + '_test' + str(j),
                                               event_location='this is a place',
-                                              event_description='booty',
+                                              event_description='description',
                                               is_free_time=False)
                 nonrec_events.append(ev)
         recurring = DatabaseStructures.WeeklyRecurringSchedule()
@@ -202,10 +220,9 @@ class CreateUser(webapp2.RequestHandler):
 
         user.put()
 
-        guestbook_name = self.request.get('guestbook_name',
-                                          DEFAULT_GUESTBOOK_NAME)
-        query_params = {'guestbook_name': guestbook_name}
-        self.redirect('/?' + urllib.urlencode(query_params))
+        query_params = {'user_name': user.unique_user_name}
+        self.redirect('/profile?' + urllib.urlencode(query_params))
+
 
 class EventPage(webapp2.RequestHandler):
     def get(self):
