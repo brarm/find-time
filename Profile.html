@@ -6,7 +6,17 @@
 </head>
 {% autoescape true %}
 <body>
-    User: {{user_name}}
-    Calendar: {{calendar}}
+    User: {{user_name}} <br>
+    Calendar: {{calendar}} <br>
+    Tuesday events: <br>
+    {% for event in calendar.daily_events['tuesday'] %}
+        Event #{{loop.index}}
+        Name: {{event.event_name}} <br>
+        Description: {{event.event_description}} <br>
+        Location: {{event.event_location}} <br>
+        Beginning time: {{event.beginning_time}} <br>
+        Ending time: {{event.ending_time}} <br>
+        <br><br>
+    {% endfor %}
 </body>
 {% endautoescape %}
