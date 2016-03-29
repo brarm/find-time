@@ -115,7 +115,6 @@ class Calendar:
     def __init__(self, user):
         for day in DAYSOFTHEWEEK:
             self.daily_events[day] = []
-        logging.warning("user is" + str(user.unique_user_name) + " and has type: " + str(type(user)))
 
         if user.user_recurring_calendar is None:
             user.user_recurring_calendar = DatabaseStructures.WeeklyRecurringSchedule()
@@ -145,14 +144,11 @@ class ProfilePage(webapp2.RequestHandler):
         if isinstance(user, unicode):
             user = str(user)
 
-        logging.error(user)
         if isinstance(user, str):
             try:
                 u = DatabaseStructures.User.query(DatabaseStructures.User.unique_user_name == user).fetch(1)
                 user_obj = u[0]
-                logging.error(str(type(user_obj)))
                 one_week_cal = Calendar(user_obj)
-                logging.error("1")
             except Exception as e:
                 logging.error(str(type(e)))
                 logging.error(str(e))
@@ -160,7 +156,6 @@ class ProfilePage(webapp2.RequestHandler):
                 one_week_cal = None
         elif isinstance(user, DatabaseStructures.User):
             one_week_cal = Calendar(user)
-            logging.error("2")
 
         template_values = {"calendar": one_week_cal,
                            "user_name": user,
