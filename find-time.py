@@ -10,6 +10,7 @@ import datetime
 import DatabaseStructures
 import random
 import logging
+import time
 
 DEFAULT_GUESTBOOK_NAME = 'Default Guestbook'
 
@@ -144,12 +145,11 @@ class ProfilePage(webapp2.RequestHandler):
         if isinstance(user, unicode):
             user = str(user)
 
+        logging.error(user)
         if isinstance(user, str):
             try:
                 u = DatabaseStructures.User.query(DatabaseStructures.User.unique_user_name == user).fetch(1)
-                user_obj = None
-                for v in u:
-                    user_obj = v
+                user_obj = u[0]
                 logging.error(str(type(user_obj)))
                 one_week_cal = Calendar(user_obj)
                 logging.error("1")
@@ -230,6 +230,7 @@ class CreateUser(webapp2.RequestHandler):
         user.user_nonrecurring_calendar = nonrecurring
 
         user.put()
+        time.sleep(3)
 
         query_params = {'user_name': user.unique_user_name}
         self.redirect('/profile?' + urllib.urlencode(query_params))
