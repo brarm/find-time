@@ -52,13 +52,17 @@ class MainPage(SessionsUsers.BaseHandler):
     def get(self):
         hopefully_user = self.auth.get_user_by_session(save_session=True)
         if hopefully_user:
-            id = hopefully_user
             id = DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).unique_user_name
-            keys = DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).display_name
+            DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).email_address = "butts.com"
+            email = DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).email_address
+
         else:
             id = None
+            email = None
         template_values = {
             'current_user': id,
+            'email': email,
+            # 'calendar': cal
         }
 
         template = JINJA_ENVIRONMENT.get_template('index.html')
@@ -76,11 +80,11 @@ class Calendar:
     def __init__(self, user):
         for day in DAYSOFTHEWEEK:
             self.daily_events[day] = []
-        logging.warning("loga")
-        if user.user_recurring_calendar is None:
-            logging.warning("logb")
+        if not user.user_recurring_calendar:
             user.user_recurring_calendar = DatabaseStructures.WeeklyRecurringSchedule()
-        logging.warning("logc")
+        if not user.user_nonrecurring_calendar:
+            user.user_nonrecurring_calendar = DatabaseStructures.TemporaryCalendar()
+
         recurring = user.user_recurring_calendar
 
         self.daily_events['monday'].append(recurring.monday)
@@ -90,18 +94,22 @@ class Calendar:
         self.daily_events['friday'].append(recurring.friday)
         self.daily_events['saturday'].append(recurring.saturday)
         self.daily_events['sunday'].append(recurring.sunday)
-        logging.warning("logd")
         nonrecurring = user.user_nonrecurring_calendar
         for event in nonrecurring.events:
             day = event.beginning_day
             self.daily_events[day].append(event)
+        for key in self.daily_events:
+            for ev in self.daily_events[key]:
+                if not ev:
+                    self.daily_events[key].remove(ev)
 
     # more functionality to be added to this class based on javascript requirements
 
 
 class ProfilePage(SessionsUsers.BaseHandler):
     def get(self):
-        user = self.request.get("user_name")
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
         one_week_cal = None
         if isinstance(user, unicode):
             user = str(user)
@@ -120,7 +128,7 @@ class ProfilePage(SessionsUsers.BaseHandler):
             one_week_cal = Calendar(user)
 
         template_values = {"calendar": one_week_cal,
-                           "user_name": user,
+                           "user_name": user.unique_user_name,
                            }
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
         self.response.write(template.render(template_values))
@@ -193,21 +201,48 @@ class CreateUser(SessionsUsers.BaseHandler):
         self.redirect('/profile?' + urllib.urlencode(query_params))
 
 
-class EventPage(SessionsUsers.BaseHandler):
+class EventCreator(SessionsUsers.BaseHandler):
     def get(self):
         template = JINJA_ENVIRONMENT.get_template('EventCreator.html')
         self.response.write(template.render())
 
-
-class EventCreator(SessionsUsers.BaseHandler):
     def post(self):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        if not user.user_nonrecurring_calendar:
+            user.user_nonrecurring_calendar = DatabaseStructures.TemporaryCalendar()
+
+        tempcal = user.user_nonrecurring_calendar
+
         event = DatabaseStructures.Event()
         event.event_name = self.request.get("title")
         event.event_location = self.request.get("location")
         event.event_description = self.request.get("description")
+        event.beginning_day = self.request.get("day")
+        event.ending_day = self.request.get("day")
+
+        start_ampm = self.request.get("start_time_ampm")
+        hr = int(self.request.get("start_time_hr")) % 12
+        start_hr = hr if start_ampm == "am" else hr + 12
+        start_min = int(self.request.get("start_time_min"))
+        start_time = datetime.time(start_hr, start_min)
+        event.beginning_time = start_time
+        end_ampm = self.request.get("end_time_ampm")
+        hr = int(self.request.get("end_time_hr")) % 12
+        end_hr = hr if end_ampm == "am" else hr + 12
+        end_min = int(self.request.get("end_time_min"))
+        end_time = datetime.time(end_hr, end_min)
+        event.ending_time = end_time
+        # event.beginning_time = self.request.get("start_time_hr") + ':' + self.request.get("start_time_min") + \
+        #     " " + self.request.get("start_time_ampm")
+        # event.ending_time = self.request.get("end_time_hr") + ':' + self.request.get("end_time_min") + \
+        #     " " + self.request.get("end_time_ampm")
+
+        user.user_nonrecurring_calendar.events.append(event)
+        user.put()
         event.put()
 
-        self.redirect('/?')
+        self.redirect('/profile?')
 
 
 class LoginPage(webapp2.RequestHandler):
@@ -244,7 +279,7 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/', handler=MainPage, name="main"),
     webapp2.Route(r'/profile', handler=ProfilePage, name="profile"),
     webapp2.Route(r'/create_user', handler=CreateUser),
-    webapp2.Route(r'/event_page', handler=EventPage),
+    # webapp2.Route(r'/event_page', handler=EventPage),
     webapp2.Route(r'/create_event', handler=EventCreator, name="create-event"),
     webapp2.Route(r'/login_page', handler=LoginPage),
     webapp2.Route(r'/login', handler=Login),

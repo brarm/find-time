@@ -7,9 +7,8 @@
 {% autoescape true %}
 <body>
     User: {{user_name}} <br>
-    Calendar: {{calendar}} <br>
-    Tuesday events: <br>
-    {% for event in calendar.daily_events['tuesday'] %}
+    Monday events: <br>
+    {% for event in calendar.daily_events['monday'] %}
         Event #{{loop.index}}
         Name: {{event.event_name}} <br>
         Description: {{event.event_description}} <br>
