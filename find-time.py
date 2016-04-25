@@ -50,24 +50,15 @@ class Greeting(ndb.Model):
 
 class MainPage(SessionsUsers.BaseHandler):
     def get(self):
-        user = users.get_current_user()
-        if user:
-            url = users.create_logout_url(self.request.uri)
-            url_linktext = 'Logout'
-        else:
-            url = users.create_login_url(self.request.uri)
-            url_linktext = 'Login'
-
         hopefully_user = self.auth.get_user_by_session(save_session=True)
         if hopefully_user:
             id = models.User.get_by_id(hopefully_user['user_id']).unique_user_name
+            email = models.User.get_by_id(hopefully_user['user_id']).email_address
         else:
             id = None
         template_values = {
-            'user': user,
-            'url': url,
-            'url_linktext': url_linktext,
-            'current_user': id
+            'current_user': id,
+            'email': email
         }
 
         template = JINJA_ENVIRONMENT.get_template('index.html')

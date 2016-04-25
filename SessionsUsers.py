@@ -1,5 +1,6 @@
 import logging
 import webapp2
+import DatabaseStructures
 from webapp2_extras import auth
 from webapp2_extras import sessions
 from webapp2_extras.auth import InvalidAuthIdError
@@ -142,7 +143,13 @@ class CreateUserHandler(BaseHandler):
         password = self.request.POST.get('password')
         # Passing password_raw=password so password will be hashed
         # Returns a tuple, where first value is BOOL. If True ok, If False no new user is created
-        user = self.auth.store.user_model.create_user(username, password_raw=password, unique_user_name=username)
+        tempcal = DatabaseStructures.TemporaryCalendar()
+        weekcal = DatabaseStructures.WeeklyRecurringSchedule()
+        email = "balls.com"
+        friends = []
+        user = self.auth.store.user_model.create_user(username, password_raw=password, unique_user_name=username,
+                                                      temporary_calendar=tempcal, weekly_recurring_schedule=weekcal,
+                                                      email_address=email, friends=friends)
         if not user[0]: #user is a tuple
             return user[1] # Error message
         else:
