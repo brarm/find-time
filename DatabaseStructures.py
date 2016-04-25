@@ -6,6 +6,7 @@ import urllib
 
 from google.appengine.api import users
 from google.appengine.ext import ndb
+import webapp2_extras.appengine.auth.models as auth_models
 
 
 class Event(ndb.Model):
@@ -37,7 +38,7 @@ class WeeklyRecurringSchedule(ndb.Model):
     saturday = ndb.StructuredProperty(Event, repeated=True)
 
 
-class MUser(ndb.Model):
+class MUser(auth_models.User):
     """Model for representing an individual user."""
     unique_user_name = ndb.StringProperty(indexed=True)
     display_name = ndb.StringProperty(indexed=False)

@@ -147,9 +147,10 @@ class CreateUserHandler(BaseHandler):
         weekcal = DatabaseStructures.WeeklyRecurringSchedule()
         email = "balls.com"
         friends = []
-        user = self.auth.store.user_model.create_user(username, password_raw=password, unique_user_name=username,
-                                                      temporary_calendar=tempcal, weekly_recurring_schedule=weekcal,
-                                                      email_address=email, friends=friends)
+        user = self.auth.store.user_model.create_user(username, password_raw=password, unique_user_name=username)
+        # temporary_calendar=tempcal, weekly_recurring_schedule=weekcal,
+        #                                               email_address=email, friends=friends)
+
         if not user[0]: #user is a tuple
             return user[1] # Error message
         else:

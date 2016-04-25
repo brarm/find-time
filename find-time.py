@@ -52,13 +52,13 @@ class MainPage(SessionsUsers.BaseHandler):
     def get(self):
         hopefully_user = self.auth.get_user_by_session(save_session=True)
         if hopefully_user:
-            id = models.User.get_by_id(hopefully_user['user_id']).unique_user_name
-            email = models.User.get_by_id(hopefully_user['user_id']).email_address
+            id = hopefully_user
+            id = DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).unique_user_name
+            keys = DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).display_name
         else:
             id = None
         template_values = {
             'current_user': id,
-            'email': email
         }
 
         template = JINJA_ENVIRONMENT.get_template('index.html')
@@ -237,7 +237,9 @@ webapp2_config = {}
 webapp2_config['webapp2_extras.sessions'] = {
     'secret_key': 'secret_key_123',
 }
-
+webapp2_config['webapp2_extras.auth'] = {
+    'user_model': DatabaseStructures.MUser,
+}
 app = webapp2.WSGIApplication([
     webapp2.Route(r'/', handler=MainPage, name="main"),
     webapp2.Route(r'/profile', handler=ProfilePage, name="profile"),
