@@ -27,7 +27,6 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 # will be consistent.  However, the write rate should be limited to
 # ~1/second.
 
-
 def guestbook_key(guestbook_name=DEFAULT_GUESTBOOK_NAME):
     """Constructs a Datastore key for a Guestbook entity.
 
@@ -61,16 +60,14 @@ class MainPage(SessionsUsers.BaseHandler):
 
         hopefully_user = self.auth.get_user_by_session(save_session=True)
         if hopefully_user:
-            id = hopefully_user.keys()
-            id = models.User.get_by_id(hopefully_user['user_id'])
+            id = models.User.get_by_id(hopefully_user['user_id']).unique_user_name
         else:
-            id = "b"
+            id = None
         template_values = {
             'user': user,
             'url': url,
             'url_linktext': url_linktext,
-            # 'current_user': self.auth.get_user_by_token(user_id=id, save_session=True).keys()
-            'current_user': id.unique_user_name
+            'current_user': id
         }
 
         template = JINJA_ENVIRONMENT.get_template('index.html')
@@ -78,7 +75,6 @@ class MainPage(SessionsUsers.BaseHandler):
 
 
 DAYSOFTHEWEEK = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-
 
 class Calendar:
     """The Calendar class is generated dynamically based on events in the datastore. This object will
@@ -255,7 +251,6 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/', handler=MainPage, name="main"),
     webapp2.Route(r'/profile', handler=ProfilePage, name="profile"),
     webapp2.Route(r'/create_user', handler=CreateUser),
-    webapp2.Route(r'/sign', handler=Guestbook),
     webapp2.Route(r'/event_page', handler=EventPage),
     webapp2.Route(r'/create_event', handler=EventCreator, name="create-event"),
     webapp2.Route(r'/login_page', handler=LoginPage),
