@@ -37,7 +37,7 @@ class WeeklyRecurringSchedule(ndb.Model):
     saturday = ndb.StructuredProperty(Event, repeated=True)
 
 
-class User(ndb.Model):
+class MUser(ndb.Model):
     """Model for representing an individual user."""
     unique_user_name = ndb.StringProperty(indexed=True)
     display_name = ndb.StringProperty(indexed=False)
@@ -50,8 +50,8 @@ class User(ndb.Model):
 
 class Notification(ndb.Model):
     notification_type = ndb.StringProperty(indexed=True)
-    user_notified = ndb.StructuredProperty(User)
-    user_instigating = ndb.StructuredProperty(User)
+    user_notified = ndb.StructuredProperty(MUser)
+    user_instigating = ndb.StructuredProperty(MUser)
     notification_body = ndb.StringProperty(indexed=False)
     event_associated = ndb.StructuredProperty(Event, default=None)
     title = ndb.StringProperty(indexed=False)

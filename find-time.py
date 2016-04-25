@@ -4,6 +4,7 @@ import urllib
 from google.appengine.api import users
 from google.appengine.ext import ndb
 
+from webapp2_extras.appengine.auth import models
 import jinja2
 import webapp2
 import datetime
@@ -12,16 +13,44 @@ import random
 import logging
 import time
 
+import SessionsUsers
+
+DEFAULT_GUESTBOOK_NAME = 'Default Guestbook'
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-class MainPage(webapp2.RequestHandler):
+# We set a parent key on the 'Greetings' to ensure that they are all
+# in the same entity group. Queries across the single entity group
+# will be consistent.  However, the write rate should be limited to
+# ~1/second.
+
+
+def guestbook_key(guestbook_name=DEFAULT_GUESTBOOK_NAME):
+    """Constructs a Datastore key for a Guestbook entity.
+
+    We use guestbook_name as the key.
+    """
+    return ndb.Key('Guestbook', guestbook_name)
+
+
+class Author(ndb.Model):
+    """Sub model for representing an author."""
+    identity = ndb.StringProperty(indexed=False)
+    email = ndb.StringProperty(indexed=False)
+
+
+class Greeting(ndb.Model):
+    """A main model for representing an individual Guestbook entry."""
+    author = ndb.StructuredProperty(Author)
+    content = ndb.StringProperty(indexed=False)
+    date = ndb.DateTimeProperty(auto_now_add=True)
+
+
+class MainPage(SessionsUsers.BaseHandler):
     def get(self):
-
-
         user = users.get_current_user()
         if user:
             url = users.create_logout_url(self.request.uri)
@@ -30,10 +59,18 @@ class MainPage(webapp2.RequestHandler):
             url = users.create_login_url(self.request.uri)
             url_linktext = 'Login'
 
+        hopefully_user = self.auth.get_user_by_session(save_session=True)
+        if hopefully_user:
+            id = hopefully_user.keys()
+            id = models.User.get_by_id(hopefully_user['user_id'])
+        else:
+            id = "b"
         template_values = {
             'user': user,
             'url': url,
             'url_linktext': url_linktext,
+            # 'current_user': self.auth.get_user_by_token(user_id=id, save_session=True).keys()
+            'current_user': id.unique_user_name
         }
 
         template = JINJA_ENVIRONMENT.get_template('index.html')
@@ -52,10 +89,11 @@ class Calendar:
     def __init__(self, user):
         for day in DAYSOFTHEWEEK:
             self.daily_events[day] = []
-
+        logging.warning("loga")
         if user.user_recurring_calendar is None:
+            logging.warning("logb")
             user.user_recurring_calendar = DatabaseStructures.WeeklyRecurringSchedule()
-
+        logging.warning("logc")
         recurring = user.user_recurring_calendar
 
         self.daily_events['monday'].append(recurring.monday)
@@ -65,7 +103,7 @@ class Calendar:
         self.daily_events['friday'].append(recurring.friday)
         self.daily_events['saturday'].append(recurring.saturday)
         self.daily_events['sunday'].append(recurring.sunday)
-
+        logging.warning("logd")
         nonrecurring = user.user_nonrecurring_calendar
         for event in nonrecurring.events:
             day = event.beginning_day
@@ -74,7 +112,7 @@ class Calendar:
     # more functionality to be added to this class based on javascript requirements
 
 
-class ProfilePage(webapp2.RequestHandler):
+class ProfilePage(SessionsUsers.BaseHandler):
     def get(self):
         user = self.request.get("user_name")
         one_week_cal = None
@@ -83,7 +121,7 @@ class ProfilePage(webapp2.RequestHandler):
 
         if isinstance(user, str):
             try:
-                u = DatabaseStructures.User.query(DatabaseStructures.User.unique_user_name == user).fetch(1)
+                u = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user).fetch(1)
                 user_obj = u[0]
                 one_week_cal = Calendar(user_obj)
             except Exception as e:
@@ -91,7 +129,7 @@ class ProfilePage(webapp2.RequestHandler):
                 logging.error(str(e))
                 logging.error("User not found in the database: " + user)
                 one_week_cal = None
-        elif isinstance(user, DatabaseStructures.User):
+        elif isinstance(user, DatabaseStructures.MUser):
             one_week_cal = Calendar(user)
 
         template_values = {"calendar": one_week_cal,
@@ -101,14 +139,14 @@ class ProfilePage(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 
 
-class CreateUser(webapp2.RequestHandler):
+class CreateUser(SessionsUsers.BaseHandler):
     def post(self):
         # allows developer to create user from main page
         display_name = self.request.get('display_name')
         user_name = self.request.get('user_name')
         email_address = self.request.get('email')
 
-        user = DatabaseStructures.User()
+        user = DatabaseStructures.MUser()
         user.display_name = display_name
         user.unique_user_name = user_name
         user.email_address = email_address
@@ -162,19 +200,19 @@ class CreateUser(webapp2.RequestHandler):
         user.user_nonrecurring_calendar = nonrecurring
 
         user.put()
-        time.sleep(3)
+        time.sleep(5)
 
         query_params = {'user_name': user.unique_user_name}
         self.redirect('/profile?' + urllib.urlencode(query_params))
 
 
-class EventPage(webapp2.RequestHandler):
+class EventPage(SessionsUsers.BaseHandler):
     def get(self):
         template = JINJA_ENVIRONMENT.get_template('EventCreator.html')
         self.response.write(template.render())
 
 
-class EventCreator(webapp2.RequestHandler):
+class EventCreator(SessionsUsers.BaseHandler):
     def post(self):
         event = DatabaseStructures.Event()
         event.event_name = self.request.get("title")
@@ -191,31 +229,44 @@ class LoginPage(webapp2.RequestHandler):
         self.response.write(template.render())
 
 
-class Login(webapp2.RequestHandler):
+class Login(SessionsUsers.BaseHandler):
     def get(self):
-        user = DatabaseStructures.User()
+        user = DatabaseStructures.MUser()
         user.unique_user_name = self.request.get("entered_username")
         user.put()
 
         self.redirect('/?')
 
 
-class Signup(webapp2.RequestHandler):
+class Signup(SessionsUsers.BaseHandler):
     def get(self):
-        user = DatabaseStructures.User()
+        user = DatabaseStructures.MUser()
         user.unique_user_name = self.request.get("entered_username")
         user.put()
 
         self.redirect('/?')
 
+webapp2_config = {}
+webapp2_config['webapp2_extras.sessions'] = {
+    'secret_key': 'secret_key_123',
+}
 
 app = webapp2.WSGIApplication([
-    ('/', MainPage),
-    ('/profile', ProfilePage),
-    ('/create_user', CreateUser),
-    ('/event_page', EventPage),
-    ('/create_event', EventCreator),
-    ('/login_page', LoginPage),
-    ('/login', Login),
-    ('/signup', Signup),
-], debug=True)
+    webapp2.Route(r'/', handler=MainPage, name="main"),
+    webapp2.Route(r'/profile', handler=ProfilePage, name="profile"),
+    webapp2.Route(r'/create_user', handler=CreateUser),
+    webapp2.Route(r'/sign', handler=Guestbook),
+    webapp2.Route(r'/event_page', handler=EventPage),
+    webapp2.Route(r'/create_event', handler=EventCreator, name="create-event"),
+    webapp2.Route(r'/login_page', handler=LoginPage),
+    webapp2.Route(r'/login', handler=Login),
+    webapp2.Route(r'/signup', handler=Signup),
+    # ('/login', SessionsUsers.LoginHandler),
+    # ('/logout', SessionsUsers.LogoutHandler),
+    # ('/secure', SessionsUsers.SecureRequestHandler),
+    # ('/create', SessionsUsers.CreateUserHandler),
+    webapp2.Route(r'/login/', handler=SessionsUsers.LoginHandler, name='login'),
+    webapp2.Route(r'/logout/', handler=SessionsUsers.LogoutHandler, name='logout'),
+    webapp2.Route(r'/secure/', handler=SessionsUsers.SecureRequestHandler, name='secure'),
+    webapp2.Route(r'/create/', handler=SessionsUsers.CreateUserHandler, name='create-user'),
+], debug=True, config=webapp2_config)
