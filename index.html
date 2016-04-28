@@ -5,11 +5,7 @@
 {% autoescape true %}
 <html>
   <body>
-
-    <a href="{{ url|safe }}">{{ url_linktext }}</a>
-
-
-    <hr><br><br>
+  <br><br>
     Manually create new user <br><br>
     <form action="/create_user" method="post">
       User name: <div><textarea name="user_name" rows="1" cols="60"></textarea></div>
@@ -18,12 +14,15 @@
       <div><input type="submit" value="Create User"></div>
     </form>
 
+    current user: {{ current_user }} <br>
+    email: {{ email }}
     <hr><br><br>
     Links to other pages:<br>
-    <a href="/event_page">event_page</a><br>
+    <a href="/create_event">event_page</a><br>
     <a href="/profile">profile</a><br>
-    <a href="/login_page">login_page</a>
-
+    <a href="/login/">login_page</a><br>
+    <a href="/create/">create_user</a><br>
+    <a href="/logout/">logout</a><br>
   </body>
 </html>
 {% endautoescape %}
