@@ -19,7 +19,8 @@ class Invitee(ndb.Model):
 
 class Friend(ndb.Model):
     username = ndb.StringProperty(indexed=True)
-    status = ndb.BooleanProperty(indexed=True)
+    pending  = ndb.BooleanProperty(indexed=True)
+    accepted = ndb.BooleanProperty(indexed=True)
     timestamp = ndb.DateTimeProperty(indexed=True)
 
 
@@ -61,5 +62,5 @@ class MUser(auth_models.User):
     user_nonrecurring_calendar = ndb.StructuredProperty(TemporaryCalendar, repeated=False)
     user_recurring_calendar = ndb.StructuredProperty(WeeklyRecurringSchedule, repeated=False)
     friends = ndb.StructuredProperty(Friend, indexed=False, repeated=True)
-
+2
 

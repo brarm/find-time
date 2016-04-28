@@ -105,6 +105,96 @@ class ProfilePage(SessionsUsers.BaseHandler):
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
         self.response.write(template.render(template_values))
 
+class AddFriend(SessionsUsers.BaseHandler):
+    def post(self):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        user2 = self.request.get('user')
+        if isinstance(user2, unicode):
+            user2 = str(user2)
+        friend1 = ndb.StructuredProperty(DatabaseStructures.Friend, indexed=False)
+        friend1.status = False
+        friend1.pending = True
+        friend1.username = user.unique_user_name
+        friend1.timestamp = datetime.time
+        friend2 = ndb.StructuredProperty(DatabaseStructures.Friend, indexed=False)
+        friend2.status = False
+        friend2.pending = False
+        friend2.username = user2
+        friend2.timestamp = datetime.time
+        try:
+            u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
+            user_obj = u2[0]
+            user.friends.add(friend2)
+            u2.friends.add(friend1)
+        except Exception as e:
+            logging.error(str(type(e)))
+            logging.error(str(e))
+            logging.error("User not found in the database: " + user)
+        self.redirect('/profile?')
+
+
+class AcceptFriend:
+    def post(self):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        user2 = self.request.get('user')
+        if isinstance(user2, unicode):
+            user2 = str(user2)
+        try:
+            u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
+            user_obj = u2[0]
+            for friend in user.friends:
+                if(friend.username == user2):
+                    friend.status =True
+                    friend.pending = False
+            for friend in u2.friends:
+                if (friend.username == user.unique_user_name):
+                    friend.status = True
+                    friend.pending = False
+
+        except Exception as e:
+            logging.error(str(type(e)))
+            logging.error(str(e))
+            logging.error("User not found in the database: " + user)
+        self.redirect('/profile?')
+
+class RemoveFriend:
+    def post(self):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        user2 = self.request.get('user')
+        if isinstance(user2, unicode):
+            user2 = str(user2)
+        try:
+            u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
+            user_obj = u2[0]
+            for friend in user.friends:
+                if (friend.username == user2):
+                    user.friends.remove(friend)
+            for friend in u2.friends:
+                if (friend.username == user.unique_user_name):
+                   u2.friends.remove(friend)
+
+        except Exception as e:
+            logging.error(str(type(e)))
+            logging.error(str(e))
+            logging.error("User not found in the database: " + user)
+        self.redirect('/profile?')
+
+class Search:
+    def search(self):
+        search = self.request.get('search')
+        u = DatabaseStructures.MUser.query(search == DatabaseStructures.MUser.unique_user_name or search == DatabaseStructures.MUser.display_name).fetch(1)
+        if(u != None):
+            return u
+        u = DatabaseStructures.MUser.query(search in DatabaseStructures.MUser.unique_user_name or search in DatabaseStructures.MUser.display_name).fetch(all)
+        return u
+
+
+
+
+
 #
 # class CreateUser(SessionsUsers.BaseHandler):
 #     def post(self):
