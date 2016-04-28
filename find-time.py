@@ -66,7 +66,8 @@ class Calendar:
         self.daily_events['saturday'].append(recurring.saturday)
         self.daily_events['sunday'].append(recurring.sunday)
         nonrecurring = user.user_nonrecurring_calendar
-        for event in nonrecurring.events:
+        for event_key in nonrecurring.events:
+            event = event_key.get()
             day = event.beginning_day
             self.daily_events[day].append(event)
         for key in self.daily_events:
@@ -201,9 +202,10 @@ class EventCreator(SessionsUsers.BaseHandler):
         end_time = datetime.time(end_hr, end_min)
         event.ending_time = end_time
 
-        user.user_nonrecurring_calendar.events.append(event)
+        key = event.put()
+        logging.error(key)
+        user.user_nonrecurring_calendar.events.append(key)
         user.put()
-        event.put()
 
         self.redirect('/profile?')
 
