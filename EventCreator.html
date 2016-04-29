@@ -6,11 +6,11 @@
     Event Creation Page <br><br>
 </head>
 <body>
-    <form action="/create_event" method="post">
+    <form action="/event/create" method="post">
         Title: <div><textarea name="title" rows="1" cols="30"></textarea></div>
         Location: <div><textarea name="location" rows="1" cols="30"></textarea></div>
         Description: <div><textarea name="description" rows="5" cols="30"></textarea></div>
-        Invitees: <div><select name="day">
+        Invitees: <div><select multiple name="invitees">
             <option value="matt">matt</option>
             <option value="matt2">matt2</option>
             <option value="matt3">matt3</option>
