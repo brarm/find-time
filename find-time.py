@@ -201,7 +201,23 @@ class EventHandler(SessionsUsers.BaseHandler):
         event.put()
 
     def post(self):
-        pass
+        event_key = self.request.get('event_key')
+        event = event_key.get()
+        event.location = self.request.get('location')
+        new_invitees = self.request.get('invitees')
+
+        for inv in new_invitees:
+            invitee = DatabaseStructures.Invitee(username=inv,
+                                                 pending=True,
+                                                 accepted=False,
+                                                 timestamp=datetime.datetime.now(),
+                                                 )
+            event.attendees.append(invitee)
+            u = DatabaseStructures.MUSer.get_by_id(inv)
+            u.user_nonrecurring_calendar.events.append(event_key)
+            u.put()
+        event.updated = True
+        event.put()
 
 
 class UserHandler(SessionsUsers.BaseHandler):
@@ -210,6 +226,7 @@ class UserHandler(SessionsUsers.BaseHandler):
 
     def post(self):
         pass
+        
 
 
 webapp2_config = {}
