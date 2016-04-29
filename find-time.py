@@ -76,7 +76,9 @@ class Calendar:
         nonrecurring = user.user_nonrecurring_calendar
         for event_key in nonrecurring.events:
             event = event_key.get()
-            day = event.beginning_day
+            date = event.day
+            day_index = date.today().weekday()
+            day = DAYSOFTHEWEEK[day_index]
             self.daily_events[day].append(event)
         for key in self.daily_events:
             for ev in self.daily_events[key]:
