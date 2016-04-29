@@ -197,7 +197,7 @@ class EventHandler(SessionsUsers.BaseHandler):
             u = DatabaseStructures.MUser.get_by_id(inv)
             u.user_nonrecurring_calendar.events.append(event_key)
             u.put()
-        
+
         event.put()
 
     def post(self):
