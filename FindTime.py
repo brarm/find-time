@@ -7,7 +7,6 @@ import jinja2
 import webapp2
 import datetime
 import DatabaseStructures
-import random
 import logging
 import time
 
@@ -30,18 +29,11 @@ def get_current_user(self):
 class MainPage(SessionsUsers.BaseHandler):
     def get(self):
         hopefully_user = self.auth.get_user_by_session(save_session=True)
+        user_id = None
         if hopefully_user:
-            id = DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).unique_user_name
-            DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).email_address = "butts.com"
-            email = DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).email_address
-
-        else:
-            id = None
-            email = None
+            user_id = get_current_user(self).unique_user_name
         template_values = {
-            'current_user': id,
-            'email': email,
-            # 'calendar': cal
+            'current_user': user_id,
         }
 
         template = JINJA_ENVIRONMENT.get_template('index.html')
