@@ -263,7 +263,7 @@ def decode_block(b):
 
 
 # returns the blocks between a given start time and end time
-def encode_block(start, end):
+def encode_blocks(start, end):
     end -= datetime.timedelta(minutes=29, seconds=59)
     hour = start.hour
     minute = start.minute
@@ -281,10 +281,20 @@ class RecurringEvents(SessionsUsers.BaseHandler):
         current_user = get_current_user(self)
         cal = current_user.user_recurring_calendar
         recurring_events = []
+        blocks = []
         for day in DAYSOFTHEWEEK:
             for key in getattr(cal, day):
                 recurring_events.append(key.get())
 
+        for ev in recurring_events:
+            day = encode_day(ev.day)
+            block_nums = encode_blocks(ev.beginning_time, ev.ending_time)
+            for b in block_nums:
+                blocks.append(day + str(b))
+
+        template_values = {"id": blocks}
+        template = JINJA_ENVIRONMENT.get_template('rioecurring.html')
+        self.response.write(template.render(template_values))
 
     def post(self):
         # blocks will have id in form
@@ -357,6 +367,7 @@ class EventModifier(SessionsUsers.BaseHandler):
             u.put()
         event.updated = True
         event.put()
+
 
 class EventHandler(SessionsUsers.BaseHandler):
     def get(self):
