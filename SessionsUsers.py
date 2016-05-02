@@ -166,7 +166,8 @@ class CreateUserHandler(BaseHandler):
                                                       display_name=display_name,
                                                       password_raw=password,
                                                       unique_user_name=username,
-                                                      email_address=email)
+                                                      email_address=email
+                                                      )
 
         # temporary_calendar=tempcal, weekly_recurring_schedule=weekcal,
         #                                               email_address=email, friends=friends)
@@ -179,7 +180,6 @@ class CreateUserHandler(BaseHandler):
         else:
             # User is created, let's try redirecting to login page
             try:
-                self.auth.get_user_by_password(username, password, save_session=True)
                 logging.error('@@@@@@@@@@@@@')
                 logging.error('New User created!!')
                 time.sleep(3)
