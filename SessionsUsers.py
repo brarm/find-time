@@ -74,7 +74,6 @@ class LoginHandler(BaseHandler):
       # set when a user created. should be unset, (in recurring)
       # else all bets off
 
-
       if(self.session.get('first')):
         self.session['first'] = True
         self.redirect(self.uri_for('recurring'))
