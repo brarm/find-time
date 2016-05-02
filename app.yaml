@@ -10,7 +10,7 @@ handlers:
   static_dir: stylesheets
   
 - url: /.*
-  script: find-time.app
+  script: FindTime.app
 
 libraries:
 - name: webapp2

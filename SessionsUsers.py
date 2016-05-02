@@ -97,17 +97,12 @@ class LoginHandler(BaseHandler):
         # Raises InvalidAuthIdError if user is not found
         # Raises InvalidPasswordError if provided password doesn't match with specified user
         try:
-            logging.error("log 1")
             self.auth.get_user_by_password(username, password, save_session=True)
-            logging.error("log 1a")
             self.redirect('/secure')
-            logging.error("log 1b")
         except (InvalidAuthIdError, InvalidPasswordError), e:
-            logging.error("log 2")
             # Returns error message to self.response.write in the BaseHandler.dispatcher
             # Currently no message is attached to the exceptions
             return e
-        logging.error("Should be redirecting now")
         self.redirect('/?')
 
 

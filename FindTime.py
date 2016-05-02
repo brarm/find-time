@@ -7,7 +7,6 @@ import jinja2
 import webapp2
 import datetime
 import DatabaseStructures
-import random
 import logging
 import time
 
@@ -30,18 +29,11 @@ def get_current_user(self):
 class MainPage(SessionsUsers.BaseHandler):
     def get(self):
         hopefully_user = self.auth.get_user_by_session(save_session=True)
+        user_id = None
         if hopefully_user:
-            id = DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).unique_user_name
-            DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).email_address = "butts.com"
-            email = DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).email_address
-
-        else:
-            id = None
-            email = None
+            user_id = get_current_user(self).unique_user_name
         template_values = {
-            'current_user': id,
-            'email': email,
-            # 'calendar': cal
+            'current_user': user_id,
         }
 
         template = JINJA_ENVIRONMENT.get_template('index.html')
@@ -218,6 +210,7 @@ class RecurringEvents(SessionsUsers.BaseHandler):
         pass
 
     def post(self):
+        # blocks will have id in form
         pass
 #
 # class EventCreator(SessionsUsers.BaseHandler):
@@ -256,6 +249,27 @@ class RecurringEvents(SessionsUsers.BaseHandler):
 #         user.put()
 #
 #         self.redirect('/profile?')
+
+
+class EventModifier(SessionsUsers.BaseHandler):
+    def post(self):
+        event_key = self.request.get('event_key')
+        event = event_key.get()
+        event.location = self.request.get('location')
+        new_invitees = self.request.get('invitees')
+
+        for inv in new_invitees:
+            invitee = DatabaseStructures.Invitee(username=inv,
+                                                 pending=True,
+                                                 accepted=False,
+                                                 timestamp=datetime.datetime.now(),
+                                                 )
+            event.attendees.append(invitee)
+            u = DatabaseStructures.MUSer.get_by_id(inv)
+            u.user_nonrecurring_calendar.events.append(event_key)
+            u.put()
+        event.updated = True
+        event.put()
 
 
 class EventHandler(SessionsUsers.BaseHandler):
@@ -314,25 +328,6 @@ class EventHandler(SessionsUsers.BaseHandler):
 
         event.put()
 
-    def create(self):
-        event_key = self.request.get('event_key')
-        event = event_key.get()
-        event.location = self.request.get('location')
-        new_invitees = self.request.get('invitees')
-
-        for inv in new_invitees:
-            invitee = DatabaseStructures.Invitee(username=inv,
-                                                 pending=True,
-                                                 accepted=False,
-                                                 timestamp=datetime.datetime.now(),
-                                                 )
-            event.attendees.append(invitee)
-            u = DatabaseStructures.MUSer.get_by_id(inv)
-            u.user_nonrecurring_calendar.events.append(event_key)
-            u.put()
-        event.updated = True
-        event.put()
-
 
 class UserHandler(SessionsUsers.BaseHandler):
     def get(self):
@@ -361,4 +356,5 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/create/', handler=SessionsUsers.CreateUserHandler, name='create-user'),
     webapp2.Route(r'/event/', handler=EventHandler, name='event'),
     webapp2.Route(r'/user/', handler=UserHandler, name='user'),
+    webapp2.Route(r'/populate', handler=RecurringEvents, name="recurring")
 ], debug=True, config=webapp2_config)
