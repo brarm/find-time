@@ -104,8 +104,8 @@ class ProfilePage(SessionsUsers.BaseHandler):
         friends_list = dest_user.friends
         # dest_user.friends.query(DatabaseStructures.Friend.username == current_user.unique_user_name).fetch()
         # if not empty, grab first element
-        if current_user == dest_user:
-            relation_state = 'same_user'
+        #if current_user == dest_user:
+         #   relation_state = 'same_user'
 
 
         #friends = user_obj.friends
