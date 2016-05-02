@@ -1,0 +1,12 @@
+body { 
+  background: url(https://i.ytimg.com/vi/ZKmG4ONAFZI/maxresdefault.jpg) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+
+.panel-default {
+opacity: 0.9;
+margin-top:30px;
+}
+.form-group.last { margin-bottom:0px; }

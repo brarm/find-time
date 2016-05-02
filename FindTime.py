@@ -134,7 +134,6 @@ class AddFriend(SessionsUsers.BaseHandler):
             logging.error("User not found in the database: " + user)
         self.redirect('/profile?')
 
-
 class AcceptFriend:
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
@@ -192,10 +191,6 @@ class Search:
         u = DatabaseStructures.MUser.query(search in DatabaseStructures.MUser.unique_user_name or search in DatabaseStructures.MUser.display_name).fetch(all)
         return u
 
-
-
-
-
 class RecurringEvents(SessionsUsers.BaseHandler):
     def get(self):
         pass
@@ -203,44 +198,6 @@ class RecurringEvents(SessionsUsers.BaseHandler):
     def post(self):
         # blocks will have id in form
         pass
-#
-# class EventCreator(SessionsUsers.BaseHandler):
-#     def get(self):
-#         template = JINJA_ENVIRONMENT.get_template('EventCreator.html')
-#         self.response.write(template.render())
-#
-#     def post(self):
-#         user = get_current_user(self)
-#         if not user.user_nonrecurring_calendar:
-#             user.user_nonrecurring_calendar = DatabaseStructures.TemporaryCalendar()
-#
-#         event = DatabaseStructures.Event()
-#         event.event_name = self.request.get("title")
-#         event.event_location = self.request.get("location")
-#         event.event_description = self.request.get("description")
-#         event.beginning_day = self.request.get("day")
-#         event.ending_day = self.request.get("day")
-#
-#         start_ampm = self.request.get("start_time_ampm")
-#         hr = int(self.request.get("start_time_hr")) % 12
-#         start_hr = hr if start_ampm == "am" else hr + 12
-#         start_min = int(self.request.get("start_time_min"))
-#         start_time = datetime.time(start_hr, start_min)
-#         event.beginning_time = start_time
-#         end_ampm = self.request.get("end_time_ampm")
-#         hr = int(self.request.get("end_time_hr")) % 12
-#         end_hr = hr if end_ampm == "am" else hr + 12
-#         end_min = int(self.request.get("end_time_min"))
-#         end_time = datetime.time(end_hr, end_min)
-#         event.ending_time = end_time
-#
-#         key = event.put()
-#         logging.error(key)
-#         user.user_nonrecurring_calendar.events.append(key)
-#         user.put()
-#
-#         self.redirect('/profile?')
-
 
 class EventModifier(SessionsUsers.BaseHandler):
     def post(self):
@@ -262,9 +219,9 @@ class EventModifier(SessionsUsers.BaseHandler):
         event.updated = True
         event.put()
 
-
 class EventHandler(SessionsUsers.BaseHandler):
     def get(self):
+        
         template = JINJA_ENVIRONMENT.get_template('EventCreator.html')
         self.response.write(template.render())
 
@@ -326,9 +283,11 @@ class UserHandler(SessionsUsers.BaseHandler):
 
     def post(self):
         pass
+
+    def recurring(self):
+
+
         
-
-
 webapp2_config = {}
 webapp2_config['webapp2_extras.sessions'] = {
     'secret_key': 'secret_key_123',
@@ -341,11 +300,11 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/profile', handler=ProfilePage, name="profile"),
     webapp2.Route(r'/event/create', handler=EventHandler, name="create-event"),
     webapp2.Route(r'/<event>/modify', handler=EventHandler, name="event"),
-    webapp2.Route(r'/login/', handler=SessionsUsers.LoginHandler, name='login'),
-    webapp2.Route(r'/logout/', handler=SessionsUsers.LogoutHandler, name='logout'),
-    webapp2.Route(r'/secure/', handler=SessionsUsers.SecureRequestHandler, name='secure'),
-    webapp2.Route(r'/create/', handler=SessionsUsers.CreateUserHandler, name='create-user'),
-    webapp2.Route(r'/event/', handler=EventHandler, name='event'),
-    webapp2.Route(r'/user/', handler=UserHandler, name='user'),
-    webapp2.Route(r'/populate', handler=RecurringEvents, name="recurring")
+    webapp2.Route(r'/login', handler=SessionsUsers.LoginHandler, name='login'),
+    webapp2.Route(r'/logout', handler=SessionsUsers.LogoutHandler, name='logout'),
+    webapp2.Route(r'/secure', handler=SessionsUsers.SecureRequestHandler, name='secure'),
+    webapp2.Route(r'/create', handler=SessionsUsers.CreateUserHandler, name='create-user'),
+    webapp2.Route(r'/event', handler=EventHandler, name='event'),
+    webapp2.Route(r'/user', handler=UserHandler, name='user'),
+    webapp2.Route(r'/recurring', handler=RecurringEvents, name='recurring')
 ], debug=True, config=webapp2_config)
