@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>login or signup</title>
+		<link rel="stylesheet" type="text/css" href="/stylesheets/css/clickable-grid.css">
+		<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+	  	<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+	  	<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+	  	<style>
+		  	#feedback { font-size: 1.4em; }
+
+		  	/*#selectable td { margin: 0px; padding: 1px; float: left; width: 40px; height: 10px; font-size: 4em; text-align: center; }*/
+		  	.tdItem.ui-selecting { background: #FECA40; }
+		  	.tdItem.ui-selected { background: #F39814; color: black; }
+		  	/*#selectable { list-style-type: none; margin: 0; padding: 0; width:
+		  	 450px; }*/
+		  	 .th { font-size: 1.2em; }
+	  	</style>
+	  	<script>
+	  	$(function() {
+	  	  $( "#selectable" ).selectable();
+	  	});
+	  	</script>
+	</head>
+	
+	<body>
+	<script>
+	$(document).ready(function(){
+		$("button.toggle").click(function(){
+			$(".panel").toggle();
+		});
+	});
+	</script>
+
+	<button class="toggle">Fill in Weekly Schedule</button>
+
+	<div class="panel">
+	</div>
+
+	<script>
+		var x = document.getElementsByClassName('panel')[0];
+		var grid = document.createElement('table');
+		grid.className = 'grid';
+    	x.appendChild(grid);
+    	var day_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+    	var col_headers = ['Time','M','T','W','Th','F','Sa','Su'];
+    	var hour = 12;
+
+    	for(var x=0; x<49; x++) {
+    		var tr = grid.appendChild(document.createElement('tr'));
+
+    		if(x == 0) {
+    			$.each(col_headers, function( index, value ) {
+    				var th = tr.appendChild(document.createElement('th'));
+    				$(th).text(value)
+    			})
+    		}
+    		else {
+    			for(var y=0; y<7; y++) {
+    				if(y == 0) {
+    					var th = tr.appendChild(document.createElement('th'));
+    					$(th).text(function() {
+    						var string = ''
+    						if(x % 2 != 0) {
+    							string += hour+ ':00';
+    							hour = (hour+1) % 12;
+    							console.log(hour);
+    							if(hour == 0) hour = 12;
+    						}
+    						return string ;
+    					})
+    				}
+    				var cell = tr.appendChild(document.createElement('td'));
+    				cell.className = 'tdItem';
+    				$(cell).prop("id", day_letters[y] + x);
+    			}
+    		}
+    	}    
+	</script>
+
+	<script>
+	$(document).ready(function(){
+		$("table").selectable({
+			filter: ".tdItem",
+			stop: function( event, ui ) {
+				$(".ui-selected", this).each(function() {
+					console.log('selected',$(this).attr("id"));
+					console.log($(this).css('background-color'));
+					if($(this).css('background-color') == 'rgb(243, 152, 20)') {
+						$(this).css('background-color','rgb(0, 0, 255)');
+					}
+					else if($(this).css('background-color') == 'rgb(0, 0, 255)') {
+						$(this).css('background-color','');
+					}
+				});
+			}
+		});
+	});
+	</script>
+
+	<button class="populate">Submit weekly schedule</button>
+	<script>
+	$(".populate").click(function() {
+		console.log('submit');
+		schedule = $('.tdItem').filter(function() {
+			return ($(this).css('background-color') == 'rgb(0, 0, 255)')
+		});
+		console.log(schedule)
+		var ids = [];
+		$.each(schedule, function(index, value) {
+			ids.push($(value).attr('id'));
+		});
+		var url = '/recurring';
+		$.ajax({
+			url: url,
+			data: {ids},
+			type: 'POST'
+		});
+	});
+	</script>
+	
+	</body>
+
+</html>
