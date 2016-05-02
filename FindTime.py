@@ -113,8 +113,11 @@ class ProfilePage(SessionsUsers.BaseHandler):
         elif isinstance(user, DatabaseStructures.MUser):
             one_week_cal = Calendar(user)
 
+        #friends = user_obj.friends
+
         template_values = {"calendar": one_week_cal,
                            "user_name": user.unique_user_name,
+                           "friends": friends
                            }
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
         self.response.write(template.render(template_values))
@@ -377,9 +380,13 @@ class EventModifier(SessionsUsers.BaseHandler):
 
 class EventHandler(SessionsUsers.BaseHandler):
     def get(self):
-        
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        friends = user.friends
+        template_values = {"friends": friends,
+                           }
         template = JINJA_ENVIRONMENT.get_template('EventCreator.html')
-        self.response.write(template.render())
+        self.response.write(template.render(template_values))
 
     def post(self):
         current_user = get_current_user(self)
@@ -469,7 +476,8 @@ class UserHandler(SessionsUsers.BaseHandler):
         pass
 
 webapp2_config = {'webapp2_extras.sessions': {'secret_key': 'secret_key_123', },
-                  'webapp2_extras.auth': {'user_model': DatabaseStructures.MUser}
+                  'webapp2_extras.auth': {'user_model': DatabaseStructures.MUser,
+                                          'user_attributes': {'first': True, 'message': ''}}
                   }
 
 app = webapp2.WSGIApplication([
