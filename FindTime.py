@@ -200,6 +200,43 @@ class Search:
         u = DatabaseStructures.MUser.query(search in DatabaseStructures.MUser.unique_user_name or search in DatabaseStructures.MUser.display_name).fetch(all)
         return u
 
+class SearchResults(SessionsUsers.BaseHandler):
+    def get(self):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        one_week_cal = None
+        if isinstance(user, unicode):
+            user = str(user)
+        if isinstance(user, str):
+            try:
+                u = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user).fetch(1)
+                user_obj = u[0]
+                one_week_cal = Calendar(user_obj)
+            except Exception as e:
+                logging.error(str(type(e)))
+                logging.error(str(e))
+                logging.error("User not found in the database: " + user)
+                one_week_cal = None
+        elif isinstance(user, DatabaseStructures.MUser):
+            one_week_cal = Calendar(user)
+
+        search = self.request.get('search_input')
+        search_results = DatabaseStructures.MUser.query(search == DatabaseStructures.MUser.unique_user_name or search == DatabaseStructures.MUser.display_name).fetch(1)
+        if len(search_results) is 0:
+            logging.error("user name didn't match anything")
+            list_of_all_users = DatabaseStructures.MUser.query().fetch()
+            for possible_match in list_of_all_users :
+                if(search in possible_match.unique_user_name):
+                    search_results.append(possible_match)
+
+
+        template_values = {"calendar": one_week_cal,
+                           "user_name": user.unique_user_name,
+                           "search_results": search_results,
+                           }
+        template = JINJA_ENVIRONMENT.get_template('SearchResults.html')
+        self.response.write(template.render(template_values))
+
 
 
 
@@ -356,5 +393,6 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/create/', handler=SessionsUsers.CreateUserHandler, name='create-user'),
     webapp2.Route(r'/event/', handler=EventHandler, name='event'),
     webapp2.Route(r'/user/', handler=UserHandler, name='user'),
-    webapp2.Route(r'/populate', handler=RecurringEvents, name="recurring")
+    webapp2.Route(r'/populate', handler=RecurringEvents, name="recurring"),
+    webapp2.Route(r'/search', handler=SearchResults, name="search"),
 ], debug=True, config=webapp2_config)
