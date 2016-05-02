@@ -1,6 +1,7 @@
 import os
 import urllib
 
+from google.appengine.api import mail
 from google.appengine.ext import ndb
 
 import jinja2
@@ -127,87 +128,77 @@ class AddFriend(SessionsUsers.BaseHandler):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
         user2 = self.request.get('user')
-        if isinstance(user2, unicode):
-            user2 = str(user2)
-        friend1 = ndb.StructuredProperty(DatabaseStructures.Friend, indexed=False)
-        friend1.status = False
-        friend1.pending = True
-        friend1.username = user.unique_user_name
-        friend1.timestamp = datetime.time
-        friend2 = ndb.StructuredProperty(DatabaseStructures.Friend, indexed=False)
-        friend2.status = False
-        friend2.pending = False
-        friend2.username = user2
-        friend2.timestamp = datetime.time
+        logging.error(user2)
+        friend1 = DatabaseStructures.Friend(accepted =False,pending=True, username=user.unique_user_name,timestamp=datetime.datetime.now())
+        friend2 = DatabaseStructures.Friend(accepted =False,pending=False, username=user2,timestamp=datetime.datetime.now())
         try:
-            u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
+            u2 = DatabaseStructures.MUser.query(user2 == DatabaseStructures.MUser.unique_user_name).fetch(1)
             user_obj = u2[0]
-            user.friends.add(friend2)
-            u2.friends.add(friend1)
+            if user.friends is None:
+                user.friends = ndb.StructuredProperty(DatabaseStructures.Friend, repeated=True)
+            if user_obj.friends is None:
+                user_obj.friends = ndb.StructuredProperty(DatabaseStructures.Friend, repeated=True)
+            user.friends.append(friend2)
+            user_obj.friends.append(friend1)
+            user.put()
+            user_obj.put()
+
         except Exception as e:
             logging.error(str(type(e)))
             logging.error(str(e))
-            logging.error("User not found in the database: " + user)
+            logging.error("User not found in the database: " + user.unique_user_name)
         self.redirect('/profile?')
+
 
 class AcceptFriend:
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
-        user2 = self.request.get('user')
-        if isinstance(user2, unicode):
-            user2 = str(user2)
+        user2 = self.request.get('user1')
         try:
             u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
             user_obj = u2[0]
             for friend in user.friends:
                 if(friend.username == user2):
-                    friend.status =True
+                    friend.accepted =True
                     friend.pending = False
-            for friend in u2.friends:
+            for friend in user_obj.friends:
                 if (friend.username == user.unique_user_name):
-                    friend.status = True
+                    friend.accepted = True
                     friend.pending = False
+            user.put()
+            user_obj.put()
 
         except Exception as e:
             logging.error(str(type(e)))
             logging.error(str(e))
-            logging.error("User not found in the database: " + user)
+            logging.error("User not found in the database: " + user.unique_user_name)
         self.redirect('/profile?')
 
 
-class RemoveFriend:
+class RemoveFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
-        user2 = self.request.get('user')
-        if isinstance(user2, unicode):
-            user2 = str(user2)
+        user2 = self.request.get('user2')
         try:
             u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
             user_obj = u2[0]
             for friend in user.friends:
                 if (friend.username == user2):
                     user.friends.remove(friend)
-            for friend in u2.friends:
+            for friend in user_obj.friends:
                 if (friend.username == user.unique_user_name):
-                   u2.friends.remove(friend)
-
+                   user_obj.friends.remove(friend)
+            user.put()
+            user_obj.put()
         except Exception as e:
             logging.error(str(type(e)))
             logging.error(str(e))
-            logging.error("User not found in the database: " + user)
+            logging.error("User not found in the database: " + user.unique_user_name)
         self.redirect('/profile?')
 
 
-class Search:
-    def search(self):
-        search = self.request.get('search')
-        u = DatabaseStructures.MUser.query(search == DatabaseStructures.MUser.unique_user_name or search == DatabaseStructures.MUser.display_name).fetch(1)
-        if(u != None):
-            return u
-        u = DatabaseStructures.MUser.query(search in DatabaseStructures.MUser.unique_user_name or search in DatabaseStructures.MUser.display_name).fetch(all)
-        return u
 
 class SearchResults(SessionsUsers.BaseHandler):
     def get(self):
@@ -409,6 +400,7 @@ class UserHandler(SessionsUsers.BaseHandler):
         pass
 
     def recurring(self):
+        pass
       
 webapp2_config = {}
 webapp2_config['webapp2_extras.sessions'] = {
@@ -428,6 +420,9 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/create', handler=SessionsUsers.CreateUserHandler, name='create-user'),
     webapp2.Route(r'/event', handler=EventHandler, name='event'),
     webapp2.Route(r'/user', handler=UserHandler, name='user'),
-    webapp2.Route(r'/recurring', handler=RecurringEvents, name='recurring')
+    webapp2.Route(r'/recurring', handler=RecurringEvents, name='recurring'),
     webapp2.Route(r'/search', handler=SearchResults, name="search"),
+    webapp2.Route(r'/add/', handler=AddFriend, name='add-friend'),
+    webapp2.Route(r'/remove/', handler=RemoveFriend, name='remove-friend'),
+    webapp2.Route(r'/accept/', handler=AcceptFriend, name='accept-friend'),
 ], debug=True, config=webapp2_config)
