@@ -21,7 +21,8 @@ class Invitee(ndb.Model):
 
 class Friend(ndb.Model):
     username = ndb.StringProperty(indexed=True)
-    status = ndb.BooleanProperty(indexed=True)
+    pending  = ndb.BooleanProperty(indexed=True)
+    accepted = ndb.BooleanProperty(indexed=True)
     timestamp = ndb.DateTimeProperty(indexed=True)
 
 
@@ -39,20 +40,6 @@ class Event(ndb.Model):
 
 class WeeklyRecurringSchedule(ndb.Model):
     """Model for a 7 day calendar for a particular user"""
-    # sunday_start = ndb.TimeProperty(indexed=True, repeated=True)
-    # sunday_end = ndb.TimeProperty(indexed=True, repeated=True)
-    # monday_start = ndb.TimeProperty(indexed=True, repeated=True)
-    # monday_end = ndb.TimeProperty(indexed=True, repeated=True)
-    # tuesday_start = ndb.TimeProperty(indexed=True, repeated=True)
-    # tuesday_end = ndb.TimeProperty(indexed=True, repeated=True)
-    # wednesday_start = ndb.TimeProperty(indexed=True, repeated=True)
-    # wednesday_end = ndb.TimeProperty(indexed=True, repeated=True)
-    # thursday_start = ndb.TimeProperty(indexed=True, repeated=True)
-    # thursday_end = ndb.TimeProperty(indexed=True, repeated=True)
-    # friday_start = ndb.TimeProperty(indexed=True, repeated=True)
-    # friday_end = ndb.TimeProperty(indexed=True, repeated=True)
-    # saturday_start = ndb.TimeProperty(indexed=True, repeated=True)
-    # saturday_end = ndb.TimeProperty(indexed=True, repeated=True)
     sunday = ndb.KeyProperty(Event, repeated=True)
     monday = ndb.KeyProperty(Event, repeated=True)
     tuesday = ndb.KeyProperty(Event, repeated=True)
@@ -74,6 +61,6 @@ class MUser(auth_models.User):
     user_nonrecurring_calendar = ndb.StructuredProperty(TemporaryCalendar, repeated=False)
     user_recurring_calendar = ndb.StructuredProperty(WeeklyRecurringSchedule, repeated=False)
     friends = ndb.StructuredProperty(Friend, indexed=False, repeated=True)
-
+2
 
 
