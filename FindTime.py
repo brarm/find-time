@@ -82,8 +82,8 @@ class Calendar:
         for event_key in nonrecurring.events:
             event = event_key.get()
             day = event.day
-            # day_index = date.today().weekday()
-            # day = DAYSOFTHEWEEK[day_index]
+            day_index = datetime.datetime.today().weekday()
+            day = DAYSOFTHEWEEK[day_index]
             self.daily_events[day].append(event)
         for key in self.daily_events:
             for ev in self.daily_events[key]:
@@ -427,6 +427,7 @@ class EventHandler(SessionsUsers.BaseHandler):
         event_key = event.put()
 
         current_user.user_nonrecurring_calendar.events.append(event_key)
+        current_user.put()
 
         self.redirect("/profile")
 
