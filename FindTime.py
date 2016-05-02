@@ -9,6 +9,8 @@ import logging
 
 import SessionsUsers
 
+from jinja2.ext import autoescape
+
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
@@ -34,6 +36,19 @@ class MainPage(SessionsUsers.BaseHandler):
         }
 
         template = JINJA_ENVIRONMENT.get_template('index.html')
+        self.response.write(template.render(template_values))
+
+class TestPage(SessionsUsers.BaseHandler):
+    def get(self):
+        hopefully_user = self.auth.get_user_by_session(save_session=True)
+        user_id = None
+        if hopefully_user:
+            user_id = get_current_user(self).unique_user_name
+        template_values = {
+            'current_user': user_id,
+        }
+
+        template = JINJA_ENVIRONMENT.get_template('TestPage.html')
         self.response.write(template.render(template_values))
 
 
@@ -263,6 +278,8 @@ class RecurringEvents(SessionsUsers.BaseHandler):
             for key in getattr(cal, day):
                 recurring_events.append(key.get())
 
+        template_values = { 'ids': recurring_events, 'first' : self.session.get('first') }
+
         for ev in recurring_events:
             day = encode_day(ev.day)
             block_nums = encode_blocks(ev.beginning_time, ev.ending_time)
@@ -324,6 +341,13 @@ class RecurringEvents(SessionsUsers.BaseHandler):
                 # try this one instead if it doesn't work
                 # current_user.user_nonrecurring_calendar[key].append(event_key)
 
+        if self.session.get('first'):
+            self.session['first'] = False
+            self.session['message'] = 'Congratulations! You\'ve completed the signup'
+        else:
+            self.session['message'] = 'Recurring Calendar saved'
+        
+        self.redirect(self.uri_for('profile'))
 
 class EventModifier(SessionsUsers.BaseHandler):
     def post(self):
@@ -460,4 +484,5 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/add/', handler=AddFriend, name='add-friend'),
     webapp2.Route(r'/remove/', handler=RemoveFriend, name='remove-friend'),
     webapp2.Route(r'/accept/', handler=AcceptFriend, name='accept-friend'),
+    webapp2.Route(r'/test', handler=TestPage, name='test'),
 ], debug=True, config=webapp2_config)
