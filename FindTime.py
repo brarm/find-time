@@ -8,7 +8,6 @@ import webapp2
 import datetime
 import DatabaseStructures
 import logging
-import time
 
 import SessionsUsers
 
@@ -106,6 +105,23 @@ class ProfilePage(SessionsUsers.BaseHandler):
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
         self.response.write(template.render(template_values))
 
+
+# returns the day indexed by character c
+def decode_day(c):
+    ascii_index = ord(c)
+    index = ascii_index - 97
+    day = DAYSOFTHEWEEK[index]
+    return day
+
+# returns the start time of a particular block in 30 minute increments (1-48)
+def decode_block(b):
+    b -= 1
+    ampm = 'am' if b < 23 else 'pm'
+    hr = (b / 2) % 24
+    min = 0 if b % 2 is 0 else 30
+    return datetime.time(hr, min)
+
+
 class AddFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
@@ -159,6 +175,7 @@ class AcceptFriend:
             logging.error("User not found in the database: " + user)
         self.redirect('/profile?')
 
+
 class RemoveFriend:
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
@@ -182,6 +199,7 @@ class RemoveFriend:
             logging.error("User not found in the database: " + user)
         self.redirect('/profile?')
 
+
 class Search:
     def search(self):
         search = self.request.get('search')
@@ -191,6 +209,43 @@ class Search:
         u = DatabaseStructures.MUser.query(search in DatabaseStructures.MUser.unique_user_name or search in DatabaseStructures.MUser.display_name).fetch(all)
         return u
 
+class SearchResults(SessionsUsers.BaseHandler):
+    def get(self):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        one_week_cal = None
+        if isinstance(user, unicode):
+            user = str(user)
+        if isinstance(user, str):
+            try:
+                u = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user).fetch(1)
+                user_obj = u[0]
+                one_week_cal = Calendar(user_obj)
+            except Exception as e:
+                logging.error(str(type(e)))
+                logging.error(str(e))
+                logging.error("User not found in the database: " + user)
+                one_week_cal = None
+        elif isinstance(user, DatabaseStructures.MUser):
+            one_week_cal = Calendar(user)
+
+        search = self.request.get('search_input')
+        search_results = DatabaseStructures.MUser.query(search == DatabaseStructures.MUser.unique_user_name or search == DatabaseStructures.MUser.display_name).fetch(1)
+        if len(search_results) is 0:
+            logging.error("user name didn't match anything")
+            list_of_all_users = DatabaseStructures.MUser.query().fetch()
+            for possible_match in list_of_all_users :
+                if(search in possible_match.unique_user_name):
+                    search_results.append(possible_match)
+
+
+        template_values = {"calendar": one_week_cal,
+                           "user_name": user.unique_user_name,
+                           "search_results": search_results,
+                           }
+        template = JINJA_ENVIRONMENT.get_template('SearchResults.html')
+        self.response.write(template.render(template_values))
+
 class RecurringEvents(SessionsUsers.BaseHandler):
     def get(self):
         pass
@@ -198,6 +253,44 @@ class RecurringEvents(SessionsUsers.BaseHandler):
     def post(self):
         # blocks will have id in form
         pass
+
+        current_user = get_current_user(self)
+
+        # blocks will have id in form <letter (a-f) = day of week><number (1-48) = 30 min block>
+        event_ids = self.request.get('id', allow_multiple=True)
+        day_groups = {}
+        # block_groups = {}
+
+        for day_of_the_week in DAYSOFTHEWEEK:
+            day_groups[day_of_the_week] = []
+            # block_groups[day_of_the_week] = []
+
+        # create dict of form dict[day] = list(blocks on that day)
+        for ev in event_ids:
+            day_char = str(ev[0])
+            block_num = int(ev[1:])
+
+            day = decode_day(day_char)
+            day_groups[day].append(block_num)
+
+        for key in day_groups.keys():
+            block_nums = day_groups[key]
+
+            block_groups = []
+            start_block = None
+            prev_block = None
+            for block in block_nums:
+                if not start_block:
+                    start_block = block
+                    prev_block = block
+                if block is not prev_block + 1:
+                    block_groups.append((start_block, prev_block))
+                    start_block = block
+                prev_block = block
+
+            for start, end in block_groups:
+                start_time = decode_block(start)
+                end_time = decode_block(end) + datetime.timedelta(minutes=29, seconds=59)
 
 class EventModifier(SessionsUsers.BaseHandler):
     def post(self):
@@ -231,7 +324,6 @@ class EventHandler(SessionsUsers.BaseHandler):
         location = self.request.get('location')
         description = self.request.get('description')
         invitees = self.request.get('invitees', allow_multiple=True)
-        logging.error("INVITEES IS OF TYPE : " + str(type(invitees)))
         day = self.request.get('day')
 
         today_index = datetime.datetime.today().weekday()
@@ -247,6 +339,7 @@ class EventHandler(SessionsUsers.BaseHandler):
         event.event_location = location
         event.event_description = description
         event.day = date
+        event.owner = current_user.unique_user_name
 
         start_ampm = self.request.get("start_time_ampm")
         hr = int(self.request.get("start_time_hr")) % 12
@@ -263,6 +356,10 @@ class EventHandler(SessionsUsers.BaseHandler):
 
         event_key = event.put()
 
+        current_user.user_nonrecurring_calendar.events.append(event_key)
+
+        self.redirect("/profile")
+
         for inv in invitees:
             invitee = DatabaseStructures.Invitee(username=inv,
                                                  pending=True,
@@ -271,10 +368,37 @@ class EventHandler(SessionsUsers.BaseHandler):
                                                  )
             event.attendees.append(invitee)
             u = DatabaseStructures.MUser.get_by_id(inv)
+
+            if not current_user.user_nonrecurring_calendar:
+                u.user_nonrecurring_calendar = DatabaseStructures.TemporaryCalendar()
             u.user_nonrecurring_calendar.events.append(event_key)
             u.put()
 
+
+        logging.error("we got here")
+
         event.put()
+
+    def create(self):
+        event_key = self.request.get('event_key')
+        event = event_key.get()
+        event.location = self.request.get('location')
+        new_invitees = self.request.get('invitees')
+
+        for inv in new_invitees:
+            invitee = DatabaseStructures.Invitee(username=inv,
+                                                 pending=True,
+                                                 accepted=False,
+                                                 timestamp=datetime.datetime.now(),
+                                                 )
+            event.attendees.append(invitee)
+            u = DatabaseStructures.MUSer.get_by_id(inv)
+            u.user_nonrecurring_calendar.events.append(event_key)
+            u.put()
+        event.updated = True
+
+        event.put()
+        self.redirect("/profile")
 
 
 class UserHandler(SessionsUsers.BaseHandler):
@@ -285,9 +409,7 @@ class UserHandler(SessionsUsers.BaseHandler):
         pass
 
     def recurring(self):
-
-
-        
+      
 webapp2_config = {}
 webapp2_config['webapp2_extras.sessions'] = {
     'secret_key': 'secret_key_123',
@@ -307,4 +429,5 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/event', handler=EventHandler, name='event'),
     webapp2.Route(r'/user', handler=UserHandler, name='user'),
     webapp2.Route(r'/recurring', handler=RecurringEvents, name='recurring')
+    webapp2.Route(r'/search', handler=SearchResults, name="search"),
 ], debug=True, config=webapp2_config)
