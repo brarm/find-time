@@ -36,6 +36,19 @@ class MainPage(SessionsUsers.BaseHandler):
         template = JINJA_ENVIRONMENT.get_template('index.html')
         self.response.write(template.render(template_values))
 
+class TestPage(SessionsUsers.BaseHandler):
+    def get(self):
+        hopefully_user = self.auth.get_user_by_session(save_session=True)
+        user_id = None
+        if hopefully_user:
+            user_id = get_current_user(self).unique_user_name
+        template_values = {
+            'current_user': user_id,
+        }
+
+        template = JINJA_ENVIRONMENT.get_template('TestPage.html')
+        self.response.write(template.render(template_values))
+
 
 DAYSOFTHEWEEK = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
@@ -465,4 +478,5 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/add/', handler=AddFriend, name='add-friend'),
     webapp2.Route(r'/remove/', handler=RemoveFriend, name='remove-friend'),
     webapp2.Route(r'/accept/', handler=AcceptFriend, name='accept-friend'),
+    webapp2.Route(r'/test', handler=TestPage, name='test'),
 ], debug=True, config=webapp2_config)

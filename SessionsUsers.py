@@ -73,6 +73,8 @@ class LoginHandler(BaseHandler):
     def get(self):
       # set when a user created. should be immediately unset here
       # else all bets off
+
+
       if(self.session.get('first')):
         self.session['first'] = False
         self.redirect(self.uri_for('recurring'))
@@ -95,6 +97,7 @@ class LoginHandler(BaseHandler):
         except (InvalidAuthIdError, InvalidPasswordError), e:
             # Returns error message to self.response.write in the BaseHandler.dispatcher
             # Currently no message is attached to the exceptions
+            logging.error("Help!!!!")
             return e
         self.redirect('/?')
 
