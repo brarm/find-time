@@ -464,8 +464,7 @@ class UserHandler(SessionsUsers.BaseHandler):
         pass
 
 webapp2_config = {'webapp2_extras.sessions': {'secret_key': 'secret_key_123', },
-                  'webapp2_extras.auth': {'user_model': DatabaseStructures.MUser,
-                                          'user_attributes': {'first': True, 'message': ''}}
+                  'webapp2_extras.auth': {'user_model': DatabaseStructures.MUser}
                   }
 
 app = webapp2.WSGIApplication([

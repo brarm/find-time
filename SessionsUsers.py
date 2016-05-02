@@ -6,7 +6,7 @@ from webapp2_extras import auth
 from webapp2_extras import sessions
 from webapp2_extras.auth import InvalidAuthIdError
 from webapp2_extras.auth import InvalidPasswordError
-
+import time
 
 def user_required(handler):
     """
@@ -143,11 +143,12 @@ class CreateUserHandler(BaseHandler):
         friends = []
         user = self.auth.store.user_model.create_user(
             username,
-            display_name=display_name, 
+            display_name=display_name,
             password_raw=password, 
             unique_user_name=username,
-            user_nonrecurring_calendar=tempcal,
-            user_recurring_calendar=weekcal)
+            # user_nonrecurring_calendar=tempcal,
+            # user_recurring_calendar=weekcal
+            )
         # temporary_calendar=tempcal, weekly_recurring_schedule=weekcal,
         #                                               email_address=email, friends=friends)
         logging.error(user)
@@ -161,8 +162,11 @@ class CreateUserHandler(BaseHandler):
             try:
                 logging.error('@@@@@@@@@@@@@')
                 logging.error('New User created!!')
+                time.sleep(3)
                 self.session['first'] = True
-                self.redirect(self.auth_config['login_url'])
+                self.auth.get_user_by_password(username, password, save_session=True)
+                self.redirect('/')
+                # self.redirect(self.auth_config['login_url'])
             except (AttributeError, KeyError), e:
                 logging.error(e)
                 self.abort(403)
