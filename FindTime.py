@@ -1,6 +1,7 @@
 import os
 import urllib
 
+from google.appengine.api import mail
 from google.appengine.ext import ndb
 
 import jinja2
@@ -127,87 +128,77 @@ class AddFriend(SessionsUsers.BaseHandler):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
         user2 = self.request.get('user')
-        if isinstance(user2, unicode):
-            user2 = str(user2)
-        friend1 = ndb.StructuredProperty(DatabaseStructures.Friend, indexed=False)
-        friend1.status = False
-        friend1.pending = True
-        friend1.username = user.unique_user_name
-        friend1.timestamp = datetime.time
-        friend2 = ndb.StructuredProperty(DatabaseStructures.Friend, indexed=False)
-        friend2.status = False
-        friend2.pending = False
-        friend2.username = user2
-        friend2.timestamp = datetime.time
+        logging.error(user2)
+        friend1 = DatabaseStructures.Friend(accepted =False,pending=True, username=user.unique_user_name,timestamp=datetime.datetime.now())
+        friend2 = DatabaseStructures.Friend(accepted =False,pending=False, username=user2,timestamp=datetime.datetime.now())
         try:
-            u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
+            u2 = DatabaseStructures.MUser.query(user2 == DatabaseStructures.MUser.unique_user_name).fetch(1)
             user_obj = u2[0]
-            user.friends.add(friend2)
-            u2.friends.add(friend1)
+            if user.friends is None:
+                user.friends = ndb.StructuredProperty(DatabaseStructures.Friend, repeated=True)
+            if user_obj.friends is None:
+                user_obj.friends = ndb.StructuredProperty(DatabaseStructures.Friend, repeated=True)
+            user.friends.append(friend2)
+            user_obj.friends.append(friend1)
+            user.put()
+            user_obj.put()
+
         except Exception as e:
             logging.error(str(type(e)))
             logging.error(str(e))
-            logging.error("User not found in the database: " + user)
+            logging.error("User not found in the database: " + user.unique_user_name)
         self.redirect('/profile?')
+
 
 class AcceptFriend:
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
-        user2 = self.request.get('user')
-        if isinstance(user2, unicode):
-            user2 = str(user2)
+        user2 = self.request.get('user1')
         try:
             u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
             user_obj = u2[0]
             for friend in user.friends:
                 if(friend.username == user2):
-                    friend.status =True
+                    friend.accepted =True
                     friend.pending = False
-            for friend in u2.friends:
+            for friend in user_obj.friends:
                 if (friend.username == user.unique_user_name):
-                    friend.status = True
+                    friend.accepted = True
                     friend.pending = False
+            user.put()
+            user_obj.put()
 
         except Exception as e:
             logging.error(str(type(e)))
             logging.error(str(e))
-            logging.error("User not found in the database: " + user)
+            logging.error("User not found in the database: " + user.unique_user_name)
         self.redirect('/profile?')
 
 
-class RemoveFriend:
+class RemoveFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
-        user2 = self.request.get('user')
-        if isinstance(user2, unicode):
-            user2 = str(user2)
+        user2 = self.request.get('user2')
         try:
             u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
             user_obj = u2[0]
             for friend in user.friends:
                 if (friend.username == user2):
                     user.friends.remove(friend)
-            for friend in u2.friends:
+            for friend in user_obj.friends:
                 if (friend.username == user.unique_user_name):
-                   u2.friends.remove(friend)
-
+                   user_obj.friends.remove(friend)
+            user.put()
+            user_obj.put()
         except Exception as e:
             logging.error(str(type(e)))
             logging.error(str(e))
-            logging.error("User not found in the database: " + user)
+            logging.error("User not found in the database: " + user.unique_user_name)
         self.redirect('/profile?')
 
 
-class Search:
-    def search(self):
-        search = self.request.get('search')
-        u = DatabaseStructures.MUser.query(search == DatabaseStructures.MUser.unique_user_name or search == DatabaseStructures.MUser.display_name).fetch(1)
-        if(u != None):
-            return u
-        u = DatabaseStructures.MUser.query(search in DatabaseStructures.MUser.unique_user_name or search in DatabaseStructures.MUser.display_name).fetch(all)
-        return u
 
 class SearchResults(SessionsUsers.BaseHandler):
     def get(self):
@@ -246,11 +237,60 @@ class SearchResults(SessionsUsers.BaseHandler):
         template = JINJA_ENVIRONMENT.get_template('SearchResults.html')
         self.response.write(template.render(template_values))
 
+
+# returns the day indexed by character c
+def decode_day(c):
+    ascii_index = ord(c)
+    index = ascii_index - 97
+    day = DAYSOFTHEWEEK[index]
+    return day
+
+
+# takes a day of the week and returns character index
+def encode_day(day):
+    index = DAYSOFTHEWEEK.index(day)
+    ascii_index = index + 97
+    c = str(unichr(ascii_index))
+    return c
+
+
+# returns the start time of a particular block in 30 minute increments (1-48)
+def decode_block(b):
+    b -= 1
+    hr = (b / 2) % 24
+    minute = 0 if b % 2 is 0 else 30
+    return datetime.time(hr, minute)
+
+
+# returns the blocks between a given start time and end time
+def encode_block(start, end):
+    end -= datetime.timedelta(minutes=29, seconds=59)
+    hour = start.hour
+    minute = start.minute
+    start_block = hour * 2 + (0 if minute is 0 else 1)
+
+    hour = end.hour
+    minute = end.minute
+    end_block = hour * 2 + (0 if minute is 0 else 1)
+
+    return range(start_block, end_block + 1)
+
+
 class RecurringEvents(SessionsUsers.BaseHandler):
     def get(self):
+<<<<<<< HEAD
         template_values = {}
         template = JINJA_ENVIRONMENT.get_template('recurring.html')
         self.response.write(template.render(template_values))
+=======
+        current_user = get_current_user(self)
+        cal = current_user.user_recurring_calendar
+        recurring_events = []
+        for day in DAYSOFTHEWEEK:
+            for key in getattr(cal, day):
+                recurring_events.append(key.get())
+
+>>>>>>> 084d7f216bd51654bd0d3226b279044912c3414a
 
     def post(self):
         # blocks will have id in form
@@ -293,6 +333,16 @@ class RecurringEvents(SessionsUsers.BaseHandler):
             for start, end in block_groups:
                 start_time = decode_block(start)
                 end_time = decode_block(end) + datetime.timedelta(minutes=29, seconds=59)
+                event = DatabaseStructures.Event(owner=current_user.unique_user_name,
+                                                 beginning_time=start_time,
+                                                 ending_time=end_time,
+                                                 recurring=True)
+                event_key = event.put()
+                # ALERT. THIS MAY NOT WORK
+                getattr(current_user.user_nonrecurring_calendar, key).append(event_key)
+                # try this one instead if it doesn't work
+                # current_user.user_nonrecurring_calendar[key].append(event_key)
+
 
 
 
@@ -378,7 +428,6 @@ class EventHandler(SessionsUsers.BaseHandler):
             u.user_nonrecurring_calendar.events.append(event_key)
             u.put()
 
-
         logging.error("we got here")
 
         event.put()
@@ -432,4 +481,7 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/user', handler=UserHandler, name='user'),
     webapp2.Route(r'/recurring', handler=RecurringEvents, name='recurring'),
     webapp2.Route(r'/search', handler=SearchResults, name="search"),
+    webapp2.Route(r'/add/', handler=AddFriend, name='add-friend'),
+    webapp2.Route(r'/remove/', handler=RemoveFriend, name='remove-friend'),
+    webapp2.Route(r'/accept/', handler=AcceptFriend, name='accept-friend'),
 ], debug=True, config=webapp2_config)
