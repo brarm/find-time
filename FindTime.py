@@ -455,10 +455,9 @@ class UserHandler(SessionsUsers.BaseHandler):
     def post(self):
         pass
 
-webapp2_config = {'webapp2_extras.sessions': {'secret_key': 'secret_key_123', },
-                  'webapp2_extras.auth': {'user_model': DatabaseStructures.MUser,
-                                          'user_attributes': {'first': True, 'message': ''}}
-                  }
+webapp2_config = {}
+webapp2_config['webapp2_extras.sessions'] = {'secret_key': 'secret_key_123', }
+webapp2_config['webapp2_extras.auth'] = {'user_model': DatabaseStructures.MUser }
 
 app = webapp2.WSGIApplication([
     webapp2.Route(r'/', handler=MainPage, name="main"),

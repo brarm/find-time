@@ -73,11 +73,13 @@ class LoginHandler(BaseHandler):
     def get(self):
       # set when a user created. should be unset, (in recurring)
       # else all bets off
-      if(self.session.get('first')):
-        self.session['first'] = True
-        self.redirect(self.uri_for('recurring'))
-      else:
-        self.redirect(self.uri_for('main'))
+      post(self)
+      # if(self.session.get('first')):
+      #   self.session['first'] = True
+      #   self.redirect(self.uri_for())
+      #   self.redirect(self.uri_for('recurring'))
+      # else:
+      #   self.redirect(self.uri_for('main'))
 
     def post(self):
         """
@@ -139,13 +141,7 @@ class CreateUserHandler(BaseHandler):
         weekcal = DatabaseStructures.WeeklyRecurringSchedule()
         email = self.request.POST.get('user[email]')
         friends = []
-        user = self.auth.store.user_model.create_user(
-            username,
-            display_name=display_name, 
-            password_raw=password, 
-            unique_user_name=username,
-            user_nonrecurring_calendar=tempcal,
-            user_recurring_calendar=weekcal)
+        user = self.auth.store.user_model.create_user(username, display_name=display_name, password_raw=password, unique_user_name=username, email_address=email)
         # temporary_calendar=tempcal, weekly_recurring_schedule=weekcal,
         #                                               email_address=email, friends=friends)
         logging.error(user)
@@ -157,10 +153,12 @@ class CreateUserHandler(BaseHandler):
         else:
             # User is created, let's try redirecting to login page
             try:
+                self.auth.get_user_by_password(username, password, save_session=True)
                 logging.error('@@@@@@@@@@@@@')
                 logging.error('New User created!!')
                 self.session['first'] = True
-                self.redirect(self.auth_config['login_url'])
+                self.redirect(self.uri_for('recurring'))
+                # self.redirect(self.auth_config['login_url'])
             except (AttributeError, KeyError), e:
                 logging.error(e)
                 self.abort(403)
