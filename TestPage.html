@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <title>Find Time</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+
+</head>
+{% autoescape true %}
+<body>
+
+    current user: {{ current_user }} <br>
+    email: {{ email }}
+    <hr><br><br>
+    Links to other pages:<br>
+    <a href="/event/create">event_page</a><br>
+    <a href="/profile">profile</a><br>
+    <a href="/login">login_page</a><br>
+    <a href="/create">create_user</a><br>
+    <a href="/logout">logout</a><br>
+    <form action="/search" method="get">
+      <p>Find some friends</p>
+        Potential Frends:<div><textarea name="search_input" rows="1" cols="30"></textarea></div>
+        <div><input type="submit" value="search"></div>
+    </form>
+    <form action="/add/" method="post">
+      Add Friend: <div><textarea name="user" rows="1" cols="30"></textarea></div></div>
+      <div><input type="submit" value="Add Friend"></div>
+    </form>
+    <form action="/accept/" method="post">
+      Accept Friend: <div><textarea name="user1" rows="1" cols="30"></textarea></div></div>
+      <div><input type="submit" value="Accept Friend"></div>
+    </form>
+    <form action="/remove/" method="post">
+      Remove Friend: <div><textarea name="user2" rows="1" cols="30"></textarea></div></div>
+      <div><input type="submit" value="Remove Friend"></div>
+    </form>
+  </body>
+    {% endautoescape %}
+</html>
+
+
+
+
