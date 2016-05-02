@@ -293,7 +293,7 @@ class RecurringEvents(SessionsUsers.BaseHandler):
                 blocks.append(day + str(b))
 
         template_values = {"id": blocks}
-        template = JINJA_ENVIRONMENT.get_template('rioecurring.html')
+        template = JINJA_ENVIRONMENT.get_template('recurring.html')
         self.response.write(template.render(template_values))
 
     def post(self):
@@ -464,15 +464,13 @@ class UserHandler(SessionsUsers.BaseHandler):
     def post(self):
         pass
 
-    def recurring(self):
-        pass
-      
 webapp2_config = {}
 webapp2_config['webapp2_extras.sessions'] = {
     'secret_key': 'secret_key_123',
 }
 webapp2_config['webapp2_extras.auth'] = {
     'user_model': DatabaseStructures.MUser,
+    'user_attributes':{'first':True,'message':''}
 }
 app = webapp2.WSGIApplication([
     webapp2.Route(r'/', handler=MainPage, name="main"),
