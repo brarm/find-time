@@ -152,6 +152,27 @@ class RecurringEvents(SessionsUsers.BaseHandler):
 #         self.redirect('/profile?')
 
 
+class EventModifier(SessionsUsers.BaseHandler):
+    def post(self):
+        event_key = self.request.get('event_key')
+        event = event_key.get()
+        event.location = self.request.get('location')
+        new_invitees = self.request.get('invitees')
+
+        for inv in new_invitees:
+            invitee = DatabaseStructures.Invitee(username=inv,
+                                                 pending=True,
+                                                 accepted=False,
+                                                 timestamp=datetime.datetime.now(),
+                                                 )
+            event.attendees.append(invitee)
+            u = DatabaseStructures.MUSer.get_by_id(inv)
+            u.user_nonrecurring_calendar.events.append(event_key)
+            u.put()
+        event.updated = True
+        event.put()
+
+
 class EventHandler(SessionsUsers.BaseHandler):
     def get(self):
         template = JINJA_ENVIRONMENT.get_template('EventCreator.html')
@@ -206,25 +227,6 @@ class EventHandler(SessionsUsers.BaseHandler):
             u.user_nonrecurring_calendar.events.append(event_key)
             u.put()
 
-        event.put()
-
-    def create(self):
-        event_key = self.request.get('event_key')
-        event = event_key.get()
-        event.location = self.request.get('location')
-        new_invitees = self.request.get('invitees')
-
-        for inv in new_invitees:
-            invitee = DatabaseStructures.Invitee(username=inv,
-                                                 pending=True,
-                                                 accepted=False,
-                                                 timestamp=datetime.datetime.now(),
-                                                 )
-            event.attendees.append(invitee)
-            u = DatabaseStructures.MUSer.get_by_id(inv)
-            u.user_nonrecurring_calendar.events.append(event_key)
-            u.put()
-        event.updated = True
         event.put()
 
 
