@@ -113,7 +113,7 @@ class AddFriend(SessionsUsers.BaseHandler):
         friend1 = DatabaseStructures.Friend(accepted=False, pending=True, username=user.unique_user_name,
                                             timestamp=datetime.datetime.now())
         friend2 = DatabaseStructures.Friend(accepted=False, pending=False, username=user2,
-                                            timestamp=datetime.datetime.now()
+                                            timestamp=datetime.datetime.now())
         try:
             u2 = DatabaseStructures.MUser.query(user2 == DatabaseStructures.MUser.unique_user_name).fetch(1)
             user_obj = u2[0]
