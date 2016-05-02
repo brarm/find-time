@@ -62,6 +62,3 @@ class MUser(auth_models.User):
     user_nonrecurring_calendar = ndb.StructuredProperty(TemporaryCalendar, repeated=False)
     user_recurring_calendar = ndb.StructuredProperty(WeeklyRecurringSchedule, repeated=False)
     friends = ndb.StructuredProperty(Friend, indexed=False, repeated=True)
-2
-
-
