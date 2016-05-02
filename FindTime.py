@@ -111,6 +111,7 @@ class RecurringEvents(SessionsUsers.BaseHandler):
         pass
 
     def post(self):
+        # blocks will have id in form
         pass
 #
 # class EventCreator(SessionsUsers.BaseHandler):
@@ -254,4 +255,5 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/create/', handler=SessionsUsers.CreateUserHandler, name='create-user'),
     webapp2.Route(r'/event/', handler=EventHandler, name='event'),
     webapp2.Route(r'/user/', handler=UserHandler, name='user'),
+    webapp2.Route(r'/populate', handler=RecurringEvents, name="recurring")
 ], debug=True, config=webapp2_config)
