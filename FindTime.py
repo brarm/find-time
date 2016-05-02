@@ -117,7 +117,7 @@ class ProfilePage(SessionsUsers.BaseHandler):
 
         template_values = {"calendar": one_week_cal,
                            "user_name": user.unique_user_name,
-                           "friends": friends
+                           "friends": user.friends
                            }
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
         self.response.write(template.render(template_values))
