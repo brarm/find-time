@@ -10,7 +10,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
   <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
-  <!-- 
+ <!--
   <style type="text/css">
     input:required:invalid, input:focus:invalid {
       background-image: url(/images/invalid.png);
@@ -28,7 +28,6 @@
 </head>
 {% autoescape true %}
 <body>
-
 <nav class="navbar navbar-inverse">
   <div class="container-fluid">
     <div class="navbar-header">
@@ -61,17 +60,36 @@
     </div>
   </div>
 </nav>
-
-<!-- current user: {{ current_user }} <br>
+    <!--
+    current user: {{ current_user }} <br>
     email: {{ email }}
     <hr><br><br>
     Links to other pages:<br>
     <a href="/event/create">event_page</a><br>
     <a href="/profile">profile</a><br>
+<<<<<<< HEAD
     <a href="/login/">login_page</a><br>
     <a href="/create/">create_user</a><br>
     <a href="/logout/">logout</a><br> -->
-  
+
+    <form action="/search" method="get">
+      <p>Find some friends</p>
+        Potential Frends:<div><textarea name="search_input" rows="1" cols="30"></textarea></div>
+        <div><input type="submit" value="search"></div>
+    </form>
+    <form action="/add/" method="post">
+      Add Friend: <div><textarea name="user" rows="1" cols="30"></textarea></div></div>
+      <div><input type="submit" value="Add Friend"></div>
+    </form>
+    <form action="/accept/" method="post">
+      Accept Friend: <div><textarea name="user1" rows="1" cols="30"></textarea></div></div>
+      <div><input type="submit" value="Accept Friend"></div>
+    </form>
+    <form action="/remove/" method="post">
+      Remove Friend: <div><textarea name="user2" rows="1" cols="30"></textarea></div></div>
+      <div><input type="submit" value="Remove Friend"></div>
+    </form>
+
 <div>
 <div class="container" >
     <div class="col-md-6" >
@@ -91,6 +109,7 @@
     </div>
 </div>
 </div>
+    </div>
 
 <script>
 function checkPasswordMatch() {
