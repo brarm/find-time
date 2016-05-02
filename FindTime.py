@@ -68,8 +68,8 @@ class Calendar:
         for event_key in nonrecurring.events:
             event = event_key.get()
             day = event.day
-            # day_index = date.today().weekday()
-            # day = DAYSOFTHEWEEK[day_index]
+            day_index = datetime.datetime.today().weekday()
+            day = DAYSOFTHEWEEK[day_index]
             self.daily_events[day].append(event)
         for key in self.daily_events:
             for ev in self.daily_events[key]:
@@ -98,6 +98,8 @@ class ProfilePage(SessionsUsers.BaseHandler):
                 one_week_cal = None
         elif isinstance(user, DatabaseStructures.MUser):
             one_week_cal = Calendar(user)
+
+
 
         template_values = {"calendar": one_week_cal,
                            "user_name": user.unique_user_name,
@@ -316,6 +318,10 @@ class EventModifier(SessionsUsers.BaseHandler):
 
 class EventHandler(SessionsUsers.BaseHandler):
     def get(self):
+        current_user = get_current_user(self)
+        friends = current_user.friends
+        template_values = {"friends": friends,
+                           }
         template = JINJA_ENVIRONMENT.get_template('EventCreator.html')
         self.response.write(template.render())
 
@@ -358,6 +364,8 @@ class EventHandler(SessionsUsers.BaseHandler):
         event_key = event.put()
 
         current_user.user_nonrecurring_calendar.events.append(event_key)
+
+        current_user.put()
 
         self.redirect("/profile")
 
