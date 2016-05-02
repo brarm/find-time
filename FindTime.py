@@ -33,9 +33,6 @@ class MainPage(SessionsUsers.BaseHandler):
         user_id = None
         if hopefully_user:
             user_id = get_current_user(self).unique_user_name
-        template_values = {
-            'current_user': user_id,
-        if hopefully_user:
             id = DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).unique_user_name
             DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).email_address = "butts.com"
             email = DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).email_address
@@ -432,6 +429,6 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/create/', handler=SessionsUsers.CreateUserHandler, name='create-user'),
     webapp2.Route(r'/event/', handler=EventHandler, name='event'),
     webapp2.Route(r'/user/', handler=UserHandler, name='user'),
-    webapp2.Route(r'/populate', handler=RecurringEvents, name="recurring")
+    webapp2.Route(r'/populate', handler=RecurringEvents, name="recurring"),
     webapp2.Route(r'/search', handler=SearchResults, name="search"),
 ], debug=True, config=webapp2_config)
