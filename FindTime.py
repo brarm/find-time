@@ -100,6 +100,7 @@ class ProfilePage(SessionsUsers.BaseHandler):
 
         relation_state = None
 
+        one_week_cal = Calendar(current_user)
         #one_week_cal = Calendar(dest_user)
         #friends_list = dest_user.friends
         # dest_user.friends.query(DatabaseStructures.Friend.username == current_user.unique_user_name).fetch()
