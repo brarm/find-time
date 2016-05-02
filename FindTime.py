@@ -209,35 +209,10 @@ class Search:
         return u
 
 class SearchResults(SessionsUsers.BaseHandler):
-    def get(self):
-        user_key = self.auth.get_user_by_session(save_session=True)
-        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
-        one_week_cal = None
-        if isinstance(user, unicode):
-            user = str(user)
-        if isinstance(user, str):
-            try:
-                u = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user).fetch(1)
-                user_obj = u[0]
-            except Exception as e:
-                logging.error(str(type(e)))
-                logging.error(str(e))
-                logging.error("User not found in the database: " + user)
-        elif isinstance(user, DatabaseStructures.MUser):
-            one_week_cal = Calendar(user)
-
-        search_input = self.request.get(search_input)
-        search_results = DatabaseStructures.MUser.query(search_input == DatabaseStructures.MUser.unique_user_name or search_input == DatabaseStructures.MUser.display_name).fetch(1)
-        if(search_results == None):
-            search_results = DatabaseStructures.MUser.query(search_input in DatabaseStructures.MUser.unique_user_name or search_input in DatabaseStructures.MUser.display_name).fetch(all)
-
-
-
-        template_values = {"search_results": search_results,
-                           "user_name": user.unique_user_name,
-                           }
+    def post(self):
         template = JINJA_ENVIRONMENT.get_template('SearchResults.html')
         self.response.write(template.render(template_values))
+
 
 
 
@@ -392,5 +367,5 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/create/', handler=SessionsUsers.CreateUserHandler, name='create-user'),
     webapp2.Route(r'/event/', handler=EventHandler, name='event'),
     webapp2.Route(r'/user/', handler=UserHandler, name='user'),
-    webapp2.Route(r'/search', handler=SearchResults, name='search'),
+    webapp2.Route(r'/search/', handler=SearchResults, name="search"),
 ], debug=True, config=webapp2_config)
