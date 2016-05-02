@@ -149,12 +149,8 @@ class AddFriend(SessionsUsers.BaseHandler):
             logging.error("User not found in the database: " + user.unique_user_name)
         self.redirect('/profile?')
 
-<<<<<<< HEAD
 
-class AcceptFriend(SessionsUsers.BaseHandler):
-=======
 class AcceptFriend:
->>>>>>> master
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
@@ -203,18 +199,7 @@ class RemoveFriend(SessionsUsers.BaseHandler):
         self.redirect('/profile?')
 
 
-<<<<<<< HEAD
-=======
-class Search:
-    def search(self):
-        search = self.request.get('search')
-        u = DatabaseStructures.MUser.query(search == DatabaseStructures.MUser.unique_user_name or search == DatabaseStructures.MUser.display_name).fetch(1)
-        if(u != None):
-            return u
-        u = DatabaseStructures.MUser.query(search in DatabaseStructures.MUser.unique_user_name or search in DatabaseStructures.MUser.display_name).fetch(all)
-        return u
 
->>>>>>> master
 class SearchResults(SessionsUsers.BaseHandler):
     def get(self):
         user_key = self.auth.get_user_by_session(save_session=True)
@@ -415,6 +400,7 @@ class UserHandler(SessionsUsers.BaseHandler):
         pass
 
     def recurring(self):
+        pass
       
 webapp2_config = {}
 webapp2_config['webapp2_extras.sessions'] = {
@@ -434,7 +420,7 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/create', handler=SessionsUsers.CreateUserHandler, name='create-user'),
     webapp2.Route(r'/event', handler=EventHandler, name='event'),
     webapp2.Route(r'/user', handler=UserHandler, name='user'),
-    webapp2.Route(r'/recurring', handler=RecurringEvents, name='recurring')
+    webapp2.Route(r'/recurring', handler=RecurringEvents, name='recurring'),
     webapp2.Route(r'/search', handler=SearchResults, name="search"),
     webapp2.Route(r'/add/', handler=AddFriend, name='add-friend'),
     webapp2.Route(r'/remove/', handler=RemoveFriend, name='remove-friend'),
