@@ -5,6 +5,8 @@ import os
 import urllib
 
 from google.appengine.api import users
+import datetime
+
 from google.appengine.ext import ndb
 import webapp2_extras.appengine.auth.models as auth_models
 
@@ -26,28 +28,39 @@ class Friend(ndb.Model):
 
 class Event(ndb.Model):
     """Individual time block (30 min minimum) to be stored in calendars"""
-    # beginning_day = ndb.DateProperty(indexed=True)
     owner = ndb.StringProperty(indexed=True)
-    attendees = ndb.StructuredProperty(Invitee, indexed=True)
-    beginning_day = ndb.StringProperty(indexed=True)
-    beginning_time = ndb.TimeProperty(indexed=True)
-    # ending_day = ndb.DateProperty(indexed=True)
-    ending_day = ndb.StringProperty(indexed=True)
+    attendees = ndb.StructuredProperty(Invitee, indexed=True, repeated=True)
+    day = ndb.DateProperty(indexed=True)
     ending_time = ndb.TimeProperty(indexed=True)
     event_name = ndb.StringProperty(indexed=False)
     event_location = ndb.StringProperty(indexed=False)
     event_description = ndb.TextProperty(indexed=False)
+    recurring = ndb.BooleanProperty(indexed=False, default=False)
 
 
 class WeeklyRecurringSchedule(ndb.Model):
     """Model for a 7 day calendar for a particular user"""
-    sunday = ndb.StructuredProperty(Event, repeated=True)
-    monday = ndb.StructuredProperty(Event, repeated=True)
-    tuesday = ndb.StructuredProperty(Event, repeated=True)
-    wednesday = ndb.StructuredProperty(Event, repeated=True)
-    thursday = ndb.StructuredProperty(Event, repeated=True)
-    friday = ndb.StructuredProperty(Event, repeated=True)
-    saturday = ndb.StructuredProperty(Event, repeated=True)
+    # sunday_start = ndb.TimeProperty(indexed=True, repeated=True)
+    # sunday_end = ndb.TimeProperty(indexed=True, repeated=True)
+    # monday_start = ndb.TimeProperty(indexed=True, repeated=True)
+    # monday_end = ndb.TimeProperty(indexed=True, repeated=True)
+    # tuesday_start = ndb.TimeProperty(indexed=True, repeated=True)
+    # tuesday_end = ndb.TimeProperty(indexed=True, repeated=True)
+    # wednesday_start = ndb.TimeProperty(indexed=True, repeated=True)
+    # wednesday_end = ndb.TimeProperty(indexed=True, repeated=True)
+    # thursday_start = ndb.TimeProperty(indexed=True, repeated=True)
+    # thursday_end = ndb.TimeProperty(indexed=True, repeated=True)
+    # friday_start = ndb.TimeProperty(indexed=True, repeated=True)
+    # friday_end = ndb.TimeProperty(indexed=True, repeated=True)
+    # saturday_start = ndb.TimeProperty(indexed=True, repeated=True)
+    # saturday_end = ndb.TimeProperty(indexed=True, repeated=True)
+    sunday = ndb.KeyProperty(Event, repeated=True)
+    monday = ndb.KeyProperty(Event, repeated=True)
+    tuesday = ndb.KeyProperty(Event, repeated=True)
+    wednesday = ndb.KeyProperty(Event, repeated=True)
+    thursday = ndb.KeyProperty(Event, repeated=True)
+    friday = ndb.KeyProperty(Event, repeated=True)
+    saturday = ndb.KeyProperty(Event, repeated=True)
 
 
 class TemporaryCalendar(ndb.Model):
@@ -63,4 +76,5 @@ class MUser(auth_models.User):
     user_recurring_calendar = ndb.StructuredProperty(WeeklyRecurringSchedule, repeated=False)
     friends = ndb.StructuredProperty(Friend, indexed=False, repeated=True)
 2
+
 
