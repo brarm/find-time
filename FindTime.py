@@ -114,14 +114,14 @@ class ProfilePage(SessionsUsers.BaseHandler):
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
         self.response.write(template.render(template_values))
 
-<<<<<<< HEAD:FindTime.py
+
 class RecurringEvents(SessionsUsers.BaseHandler):
     def get(self):
         pass
 
     def post(self):
         pass
-=======
+
 class AddFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
@@ -212,7 +212,13 @@ class Search:
 
 
 
->>>>>>> test-branch:find-time.py
+
+class RecurringEvents(SessionsUsers.BaseHandler):
+    def get(self):
+        pass
+
+    def post(self):
+        pass
 #
 # class EventCreator(SessionsUsers.BaseHandler):
 #     def get(self):
