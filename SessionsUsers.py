@@ -145,9 +145,9 @@ class CreateUserHandler(BaseHandler):
         # Returns a tuple, where first value is BOOL. If True ok, If False no new user is created
         tempcal = DatabaseStructures.TemporaryCalendar()
         weekcal = DatabaseStructures.WeeklyRecurringSchedule()
-        email = "balls.com"
+        email = "smpakes@gmail.com"
         friends = []
-        user = self.auth.store.user_model.create_user(username, password_raw=password, unique_user_name=username)
+        user = self.auth.store.user_model.create_user(username, password_raw=password, unique_user_name=username, email_address=email)
         # temporary_calendar=tempcal, weekly_recurring_schedule=weekcal,
         #                                               email_address=email, friends=friends)
 

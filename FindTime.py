@@ -2,7 +2,7 @@ import os
 import urllib
 
 from google.appengine.ext import ndb
-
+from google.appengine.api import mail
 import jinja2
 import webapp2
 import datetime
@@ -32,7 +32,7 @@ class MainPage(SessionsUsers.BaseHandler):
         hopefully_user = self.auth.get_user_by_session(save_session=True)
         if hopefully_user:
             id = DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).unique_user_name
-            DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).email_address = "butts.com"
+            #DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).email_address = "butts.com"
             email = DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).email_address
 
         else:
@@ -119,8 +119,9 @@ class AddFriend(SessionsUsers.BaseHandler):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
         user2 = self.request.get('user')
-        if isinstance(user2, unicode):
-            user2 = str(user2)
+        logging.error(user2)
+        # if isinstance(user2, unicode):
+        #     user2 = str(user2)
         friend1 = ndb.StructuredProperty(DatabaseStructures.Friend, indexed=False)
         friend1.status = False
         friend1.pending = True
@@ -132,14 +133,32 @@ class AddFriend(SessionsUsers.BaseHandler):
         friend2.username = user2
         friend2.timestamp = datetime.time
         try:
-            u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
+            u2 = DatabaseStructures.MUser.query(user2 == DatabaseStructures.MUser.unique_user_name).fetch(1)
             user_obj = u2[0]
-            user.friends.add(friend2)
-            u2.friends.add(friend1)
+            if user.friends is None:
+                user.friends = ndb.StructuredProperty(DatabaseStructures.Friend, indexed=False,repeated=True)
+            if user_obj.friends is None:
+                user_obj.friends = ndb.StructuredProperty(DatabaseStructures.Friend, indexed=False,repeated=True)
+            user.friends.append(friend2)
+            user_obj.friends.append(friend1)
+
+            user.put()
+            user_obj.put()
+            # message = mail.EmailMessage()
+            # message.sender = "findtime@this.com"
+            # message.subject = user.display_name + " sent you a friend request!"
+            # message.to = user_obj.email_adress
+            # message.body = """
+            # Hi! I've invited you to be my friend on FindTime!
+            # Please go to your FindTime account to accept me!
+            # Thanks!
+            # """
+            # message.send()
+
         except Exception as e:
             logging.error(str(type(e)))
             logging.error(str(e))
-            logging.error("User not found in the database: " + user)
+            logging.error("User not found in the database: " + user.unique_user_name)
         self.redirect('/profile?')
 
 
@@ -157,7 +176,7 @@ class AcceptFriend:
                 if(friend.username == user2):
                     friend.status =True
                     friend.pending = False
-            for friend in u2.friends:
+            for friend in user_obj.friends:
                 if (friend.username == user.unique_user_name):
                     friend.status = True
                     friend.pending = False
@@ -181,7 +200,7 @@ class RemoveFriend:
             for friend in user.friends:
                 if (friend.username == user2):
                     user.friends.remove(friend)
-            for friend in u2.friends:
+            for friend in user_obj.friends:
                 if (friend.username == user.unique_user_name):
                    u2.friends.remove(friend)
 
@@ -291,7 +310,6 @@ class EventHandler(SessionsUsers.BaseHandler):
         event.ending_time = end_time
 
         event_key = event.put()
-
         for inv in invitees:
             invitee = DatabaseStructures.Invitee(username=inv,
                                                  pending=True,
@@ -304,6 +322,10 @@ class EventHandler(SessionsUsers.BaseHandler):
             u.put()
 
         event.put()
+        current_user.user_nonrecurring_calendar.events.append(event_key)
+        current_user.put()
+        self.redirect('/profile?')
+
 
     def create(self):
         event_key = self.request.get('event_key')
@@ -323,6 +345,7 @@ class EventHandler(SessionsUsers.BaseHandler):
             u.put()
         event.updated = True
         event.put()
+
 
 
 class UserHandler(SessionsUsers.BaseHandler):
@@ -352,4 +375,8 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/create/', handler=SessionsUsers.CreateUserHandler, name='create-user'),
     webapp2.Route(r'/event/', handler=EventHandler, name='event'),
     webapp2.Route(r'/user/', handler=UserHandler, name='user'),
+    webapp2.Route(r'/add/', handler=AddFriend, name='add-friend'),
+    webapp2.Route(r'/remove/', handler=RemoveFriend, name='remove-friend'),
+    webapp2.Route(r'/accept/', handler=AcceptFriend, name='accept-friend'),
+    webapp2.Route(r'/search/', handler=Search, name='search'),
 ], debug=True, config=webapp2_config)
