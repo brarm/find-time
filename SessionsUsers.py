@@ -74,17 +74,38 @@ class LoginHandler(BaseHandler):
       # set when a user created. should be unset, (in recurring)
       # else all bets off
 
-      if(self.session.get('first')):
-        self.session['first'] = True
-        self.redirect(self.uri_for('recurring'))
-      else:
-        self.redirect(self.uri_for('main'))
+      # if(self.session.get('first')):
+      #   self.session['first'] = True
+      #   self.redirect(self.uri_for('recurring'))
+      # else:
+      #   self.redirect(self.uri_for('main'))
+      return """
+      			<!DOCTYPE hml>
+      			<html>
+      				<head>
+      					<title>webapp2 auth example</title>
+      				</head>
+      				<body>
+      				<form action="%s" method="post">
+      					<fieldset>
+      						<legend>Login form</legend>
+      						<label>Username <input type="text" name="username" placeholder="Your username" /></label>
+      						<label>Password <input type="password" name="password" placeholder="Your password" /></label>
+      					</fieldset>
+      					<button>Login user</button>
+      				</form>
+      			</html>
+      		""" % self.request.url
+
+      # LoginHandler.post(self)
 
     def post(self):
         """
               username: Get the username from POST dict
               password: Get the password from POST dict
           """
+        logging.error('############')
+        logging.error(self.request.POST)
         username = self.request.POST.get('username')
         password = self.request.POST.get('password')
         # Try to login user with password
@@ -96,7 +117,7 @@ class LoginHandler(BaseHandler):
         except (InvalidAuthIdError, InvalidPasswordError), e:
             # Returns error message to self.response.write in the BaseHandler.dispatcher
             # Currently no message is attached to the exceptions
-            logging.error("Help!!!!")
+            logging.error(e)
             return e
         self.redirect('/?')
 
@@ -146,8 +167,7 @@ class CreateUserHandler(BaseHandler):
             display_name=display_name, 
             password_raw=password, 
             unique_user_name=username,
-            user_nonrecurring_calendar=tempcal,
-            user_recurring_calendar=weekcal)
+            email_address=email)
         # temporary_calendar=tempcal, weekly_recurring_schedule=weekcal,
         #                                               email_address=email, friends=friends)
         logging.error(user)
