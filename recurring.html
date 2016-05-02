@@ -102,16 +102,15 @@
 	<button class="populate">Submit weekly schedule</button>
 	<script>
 	$(".populate").click(function() {
-		console.log('submit');
 		schedule = $('.tdItem').filter(function() {
 			return ($(this).css('background-color') == 'rgb(0, 0, 255)')
 		});
-		console.log(schedule)
 		var ids = [];
 		$.each(schedule, function(index, value) {
 			ids.push($(value).attr('id'));
 		});
 		var url = '/recurring';
+		// async server call
 		$.ajax({
 			url: url,
 			data: {ids},
