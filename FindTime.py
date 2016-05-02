@@ -237,9 +237,54 @@ class SearchResults(SessionsUsers.BaseHandler):
         template = JINJA_ENVIRONMENT.get_template('SearchResults.html')
         self.response.write(template.render(template_values))
 
+
+# returns the day indexed by character c
+def decode_day(c):
+    ascii_index = ord(c)
+    index = ascii_index - 97
+    day = DAYSOFTHEWEEK[index]
+    return day
+
+
+# takes a day of the week and returns character index
+def encode_day(day):
+    index = DAYSOFTHEWEEK.index(day)
+    ascii_index = index + 97
+    c = str(unichr(ascii_index))
+    return c
+
+
+# returns the start time of a particular block in 30 minute increments (1-48)
+def decode_block(b):
+    b -= 1
+    hr = (b / 2) % 24
+    minute = 0 if b % 2 is 0 else 30
+    return datetime.time(hr, minute)
+
+
+# returns the blocks between a given start time and end time
+def encode_block(start, end):
+    end -= datetime.timedelta(minutes=29, seconds=59)
+    hour = start.hour
+    minute = start.minute
+    start_block = hour * 2 + (0 if minute is 0 else 1)
+
+    hour = end.hour
+    minute = end.minute
+    end_block = hour * 2 + (0 if minute is 0 else 1)
+
+    return range(start_block, end_block + 1)
+
+
 class RecurringEvents(SessionsUsers.BaseHandler):
     def get(self):
-        pass
+        current_user = get_current_user(self)
+        cal = current_user.user_recurring_calendar
+        recurring_events = []
+        for day in DAYSOFTHEWEEK:
+            for key in getattr(cal, day):
+                recurring_events.append(key.get())
+
 
     def post(self):
         # blocks will have id in form
@@ -282,6 +327,16 @@ class RecurringEvents(SessionsUsers.BaseHandler):
             for start, end in block_groups:
                 start_time = decode_block(start)
                 end_time = decode_block(end) + datetime.timedelta(minutes=29, seconds=59)
+                event = DatabaseStructures.Event(owner=current_user.unique_user_name,
+                                                 beginning_time=start_time,
+                                                 ending_time=end_time,
+                                                 recurring=True)
+                event_key = event.put()
+                # ALERT. THIS MAY NOT WORK
+                getattr(current_user.user_nonrecurring_calendar, key).append(event_key)
+                # try this one instead if it doesn't work
+                # current_user.user_nonrecurring_calendar[key].append(event_key)
+
 
 class EventModifier(SessionsUsers.BaseHandler):
     def post(self):
@@ -364,7 +419,6 @@ class EventHandler(SessionsUsers.BaseHandler):
                 u.user_nonrecurring_calendar = DatabaseStructures.TemporaryCalendar()
             u.user_nonrecurring_calendar.events.append(event_key)
             u.put()
-
 
         logging.error("we got here")
 

@@ -21,7 +21,7 @@ class Invitee(ndb.Model):
 
 class Friend(ndb.Model):
     username = ndb.StringProperty(indexed=True)
-    pending  = ndb.BooleanProperty(indexed=True)
+    pending = ndb.BooleanProperty(indexed=True)
     accepted = ndb.BooleanProperty(indexed=True)
     timestamp = ndb.DateTimeProperty(indexed=True)
 
@@ -31,6 +31,7 @@ class Event(ndb.Model):
     owner = ndb.StringProperty(indexed=True)
     attendees = ndb.StructuredProperty(Invitee, indexed=True, repeated=True)
     day = ndb.DateProperty(indexed=True)
+    beginning_time = ndb.TimeProperty(indexed=True)
     ending_time = ndb.TimeProperty(indexed=True)
     event_name = ndb.StringProperty(indexed=False)
     event_location = ndb.StringProperty(indexed=False)
