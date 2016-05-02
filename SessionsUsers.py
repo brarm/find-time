@@ -39,8 +39,6 @@ class BaseHandler(webapp2.RequestHandler):
         """
               Save the sessions for preservation across requests
           """
-        logging.info('req',self.request)
-        logging.info('resp',self.response)
         try:
             response = super(BaseHandler, self).dispatch()
             self.response.write(response)
@@ -56,6 +54,11 @@ class BaseHandler(webapp2.RequestHandler):
         return sessions.get_store(request=self.request)
 
     @webapp2.cached_property
+    def session(self):
+        # Returns a session using the default cookie key.
+        return self.session_store.get_session()
+
+    @webapp2.cached_property
     def auth_config(self):
         """
               Dict to hold urls for login/logout
@@ -68,26 +71,13 @@ class BaseHandler(webapp2.RequestHandler):
 
 class LoginHandler(BaseHandler):
     def get(self):
-        """
-              Returns a simple HTML form for login
-          """
-        return """
-			<!DOCTYPE hml>
-			<html>
-				<head>
-					<title>webapp2 auth example</title>
-				</head>
-				<body>
-				<form action="%s" method="post">
-					<fieldset>
-						<legend>Login form</legend>
-						<label>Username <input type="text" name="username" placeholder="Your username" /></label>
-						<label>Password <input type="password" name="password" placeholder="Your password" /></label>
-					</fieldset>
-					<button>Login</button>
-				</form>
-			</html>
-		""" % self.request.url
+      # set when a user created. should be immediately unset here
+      # else all bets off
+      if(self.session.get('first')):
+        self.session['first'] = False
+        self.redirect(self.uri_for('recurring'))
+      else:
+        self.redirect(self.uri_for('main'))
 
     def post(self):
         """
@@ -133,6 +123,9 @@ class CreateUserHandler(BaseHandler):
 		""" % self.request.url
 
     def post(self):
+        app = webapp2.get_app()
+        logging.error('!!!!!!!!!!!')
+        logging.error(app.config)
         """
               username: Get the username from POST dict
               password: Get the password from POST dict
@@ -157,15 +150,19 @@ class CreateUserHandler(BaseHandler):
         #                                               email_address=email, friends=friends)
 
         if not user[0]: #user is a tuple
-            return user[1] # Error message
+            logging.error('@@@@@@@@@@@@@')
+            logging.error('No user created')
+            self.session['message'] = "User not created!"
+            self.redirect('/?')
         else:
             # User is created, let's try redirecting to login page
             try:
-                # redirect to calendar page
-                self.auth.get_user_by_password(username, password, save_session=True)
-                self.redirect(self.uri_for(''))
-                self.redirect(self.auth_config['login_url'], abort=True)
+                logging.error('@@@@@@@@@@@@@')
+                logging.error('New User created!!')
+                self.session['first'] = True
+                self.redirect(self.auth_config['login_url'])
             except (AttributeError, KeyError), e:
+                logging.error(e)
                 self.abort(403)
 
 
