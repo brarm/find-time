@@ -96,7 +96,7 @@ class Calendar:
 class ProfilePage(SessionsUsers.BaseHandler):
     def get(self):
         current_user = get_current_user(self)
-        dest_user = DatabaseStructures.MUser.get_by_id(profile_id)
+        #dest_user = DatabaseStructures.MUser.get_by_id(profile_id)
 
         relation_state = None
 
