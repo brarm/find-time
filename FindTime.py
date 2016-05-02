@@ -149,8 +149,12 @@ class AddFriend(SessionsUsers.BaseHandler):
             logging.error("User not found in the database: " + user.unique_user_name)
         self.redirect('/profile?')
 
+<<<<<<< HEAD
 
 class AcceptFriend(SessionsUsers.BaseHandler):
+=======
+class AcceptFriend:
+>>>>>>> master
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
@@ -199,6 +203,18 @@ class RemoveFriend(SessionsUsers.BaseHandler):
         self.redirect('/profile?')
 
 
+<<<<<<< HEAD
+=======
+class Search:
+    def search(self):
+        search = self.request.get('search')
+        u = DatabaseStructures.MUser.query(search == DatabaseStructures.MUser.unique_user_name or search == DatabaseStructures.MUser.display_name).fetch(1)
+        if(u != None):
+            return u
+        u = DatabaseStructures.MUser.query(search in DatabaseStructures.MUser.unique_user_name or search in DatabaseStructures.MUser.display_name).fetch(all)
+        return u
+
+>>>>>>> master
 class SearchResults(SessionsUsers.BaseHandler):
     def get(self):
         user_key = self.auth.get_user_by_session(save_session=True)
@@ -236,12 +252,14 @@ class SearchResults(SessionsUsers.BaseHandler):
         template = JINJA_ENVIRONMENT.get_template('SearchResults.html')
         self.response.write(template.render(template_values))
 
-
 class RecurringEvents(SessionsUsers.BaseHandler):
     def get(self):
         pass
 
     def post(self):
+        # blocks will have id in form
+        pass
+
         current_user = get_current_user(self)
 
         # blocks will have id in form <letter (a-f) = day of week><number (1-48) = 30 min block>
@@ -280,7 +298,6 @@ class RecurringEvents(SessionsUsers.BaseHandler):
                 start_time = decode_block(start)
                 end_time = decode_block(end) + datetime.timedelta(minutes=29, seconds=59)
 
-
 class EventModifier(SessionsUsers.BaseHandler):
     def post(self):
         event_key = self.request.get('event_key')
@@ -301,9 +318,9 @@ class EventModifier(SessionsUsers.BaseHandler):
         event.updated = True
         event.put()
 
-
 class EventHandler(SessionsUsers.BaseHandler):
     def get(self):
+        
         template = JINJA_ENVIRONMENT.get_template('EventCreator.html')
         self.response.write(template.render())
 
@@ -397,7 +414,8 @@ class UserHandler(SessionsUsers.BaseHandler):
     def post(self):
         pass
 
-
+    def recurring(self):
+      
 webapp2_config = {}
 webapp2_config['webapp2_extras.sessions'] = {
     'secret_key': 'secret_key_123',
@@ -410,13 +428,13 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/profile', handler=ProfilePage, name="profile"),
     webapp2.Route(r'/event/create', handler=EventHandler, name="create-event"),
     webapp2.Route(r'/<event>/modify', handler=EventHandler, name="event"),
-    webapp2.Route(r'/login/', handler=SessionsUsers.LoginHandler, name='login'),
-    webapp2.Route(r'/logout/', handler=SessionsUsers.LogoutHandler, name='logout'),
-    webapp2.Route(r'/secure/', handler=SessionsUsers.SecureRequestHandler, name='secure'),
-    webapp2.Route(r'/create/', handler=SessionsUsers.CreateUserHandler, name='create-user'),
-    webapp2.Route(r'/event/', handler=EventHandler, name='event'),
-    webapp2.Route(r'/user/', handler=UserHandler, name='user'),
-    webapp2.Route(r'/populate', handler=RecurringEvents, name="recurring"),
+    webapp2.Route(r'/login', handler=SessionsUsers.LoginHandler, name='login'),
+    webapp2.Route(r'/logout', handler=SessionsUsers.LogoutHandler, name='logout'),
+    webapp2.Route(r'/secure', handler=SessionsUsers.SecureRequestHandler, name='secure'),
+    webapp2.Route(r'/create', handler=SessionsUsers.CreateUserHandler, name='create-user'),
+    webapp2.Route(r'/event', handler=EventHandler, name='event'),
+    webapp2.Route(r'/user', handler=UserHandler, name='user'),
+    webapp2.Route(r'/recurring', handler=RecurringEvents, name='recurring')
     webapp2.Route(r'/search', handler=SearchResults, name="search"),
     webapp2.Route(r'/add/', handler=AddFriend, name='add-friend'),
     webapp2.Route(r'/remove/', handler=RemoveFriend, name='remove-friend'),

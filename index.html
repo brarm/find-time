@@ -1,11 +1,68 @@
 <!DOCTYPE html>
+
+<html lang="en">
 <head>
+  <title>Find Time</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+  <!-- 
+  <style type="text/css">
+    input:required:invalid, input:focus:invalid {
+      background-image: url(/images/invalid.png);
+      background-position: right top;
+      background-repeat: no-repeat;
+    }
+    input:required:valid {
+      background-image: url(/images/valid.png);
+      background-position: right top;
+      background-repeat: no-repeat;
+    }
+  </style> 
+  -->
+  
 </head>
 {% autoescape true %}
-<html>
-  <body>
-    current user: {{ current_user }} <br>
+<body>
+
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>                        
+      </button>
+      <a class="navbar-brand" href="#">Find Time</a>
+    </div>
+    
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav navbar-right">
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <form id="signin" class="navbar-form navbar-right" role="form" action="/login">
+            <div class="input-group">
+                <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                <input id="email" type="email" class="form-control" name="email" value="" placeholder="Email Address">                                      
+            </div>
+
+            <div class="input-group">
+              <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+              <input id="password" type="password" class="form-control" name="password" value="" placeholder="Password">   
+            </div>
+
+            <button type="submit" class="btn btn-primary">Login</button>
+          </form>
+        </div>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- current user: {{ current_user }} <br>
     email: {{ email }}
     <hr><br><br>
     Links to other pages:<br>
@@ -13,6 +70,7 @@
     <a href="/profile">profile</a><br>
     <a href="/login/">login_page</a><br>
     <a href="/create/">create_user</a><br>
+<<<<<<< HEAD
     <a href="/logout/">logout</a><br>
     <form action="/search" method="get">
       <p>Find some friends</p>
@@ -34,3 +92,51 @@
   </body>
 </html>
 {% endautoescape %}
+=======
+    <a href="/logout/">logout</a><br> -->
+  
+<div>
+<div class="container" >
+    <div class="col-md-6" >
+        <div id="logbox"  >
+            <form id="signup" method="post" action="/create" >
+              <h1>Create an Account</h1>
+              <input name="username" type="text" placeholder="Username" required class="input pass"/>
+              <input name="user[first]" type="text" placeholder="First Name" required class="input pass"/>
+              <input name="user[last]" type="text" placeholder="Last Name" required class="input pass"/>
+              <input name="user[email]" type="email" placeholder="Email address" required class="input pass"/>
+              <input id="pass1" name="user[password]" type="password" placeholder="Choose a password" required class="input pass"/>
+              <input id="pass2" name="user[password2]" type="password" placeholder="Confirm password" required class="input pass" onChange="checkPasswordMatch();"/>
+              <input type="submit" value="Sign me up!" class="inputButton"/>
+            </form>
+            <div class="registrationFormAlert" id="divCheckPasswordMatch">
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+function checkPasswordMatch() {
+    var password = $("#pass1").val();
+    var confirmPassword = $("#pass2").val();
+
+    if (password != confirmPassword) {
+        document.getElementById("pass1").style.borderColor = "#E34234";
+        document.getElementById("pass2").style.borderColor = "#E34234";
+        $("#divCheckPasswordMatch").html("Passwords do not match!");
+    }
+    else
+        document.getElementById("pass1").style.borderColor = "";
+        document.getElementById("pass2").style.borderColor = "";
+        $("#divCheckPasswordMatch").html("Passwords match.");
+}
+
+$(document).ready(function () {
+   $("#pass2").keyup(checkPasswordMatch);
+});
+</script>
+
+</body>
+{% endautoescape %}
+</html>
+>>>>>>> master

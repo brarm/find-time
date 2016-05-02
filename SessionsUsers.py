@@ -1,3 +1,4 @@
+import sys
 import logging
 import webapp2
 import DatabaseStructures
@@ -38,6 +39,8 @@ class BaseHandler(webapp2.RequestHandler):
         """
               Save the sessions for preservation across requests
           """
+        logging.info('req',self.request)
+        logging.info('resp',self.response)
         try:
             response = super(BaseHandler, self).dispatch()
             self.response.write(response)
@@ -135,14 +138,21 @@ class CreateUserHandler(BaseHandler):
               password: Get the password from POST dict
           """
         username = self.request.POST.get('username')
-        password = self.request.POST.get('password')
+        password = self.request.POST.get('user[password]')
+        display_name = self.request.POST.get('user[first]') + " " + self.request.POST.get('user[last]')
         # Passing password_raw=password so password will be hashed
         # Returns a tuple, where first value is BOOL. If True ok, If False no new user is created
         tempcal = DatabaseStructures.TemporaryCalendar()
         weekcal = DatabaseStructures.WeeklyRecurringSchedule()
-        email = "balls.com"
+        email = self.request.POST.get('user[email]')
         friends = []
-        user = self.auth.store.user_model.create_user(username, password_raw=password, unique_user_name=username)
+        user = self.auth.store.user_model.create_user(
+            username,
+            display_name=display_name, 
+            password_raw=password, 
+            unique_user_name=username,
+            user_nonrecurring_calendar=tempcal,
+            user_recurring_calendar=weekcal)
         # temporary_calendar=tempcal, weekly_recurring_schedule=weekcal,
         #                                               email_address=email, friends=friends)
 
@@ -151,6 +161,9 @@ class CreateUserHandler(BaseHandler):
         else:
             # User is created, let's try redirecting to login page
             try:
+                # redirect to calendar page
+                self.auth.get_user_by_password(username, password, save_session=True)
+                self.redirect(self.uri_for(''))
                 self.redirect(self.auth_config['login_url'], abort=True)
             except (AttributeError, KeyError), e:
                 self.abort(403)
@@ -180,8 +193,6 @@ class SecureRequestHandler(BaseHandler):
         logging.error("log 4")
         user = self.auth.get_user_by_session()
         try:
-            logging.error("log 3")
             return "Secure zone for %s <a href='%s'>Logout</a>" % (str(user), self.auth_config['logout_url'])
         except (AttributeError, KeyError), e:
-            logging.error("log 4")
             return "Secure zone"
