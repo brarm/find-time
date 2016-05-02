@@ -180,11 +180,11 @@ class AcceptFriend:
             u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
             user_obj = u2[0]
             for friend in user.friends:
-                if(friend.username == user2):
+                if friend.username == user2:
                     friend.status =True
                     friend.pending = False
             for friend in u2.friends:
-                if (friend.username == user.unique_user_name):
+                if friend.username == user.unique_user_name:
                     friend.status = True
                     friend.pending = False
 
