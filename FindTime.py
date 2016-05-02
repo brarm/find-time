@@ -248,7 +248,9 @@ class SearchResults(SessionsUsers.BaseHandler):
 
 class RecurringEvents(SessionsUsers.BaseHandler):
     def get(self):
-        pass
+        template_values = {}
+        template = JINJA_ENVIRONMENT.get_template('recurring.html')
+        self.response.write(template.render(template_values))
 
     def post(self):
         # blocks will have id in form
@@ -291,6 +293,8 @@ class RecurringEvents(SessionsUsers.BaseHandler):
             for start, end in block_groups:
                 start_time = decode_block(start)
                 end_time = decode_block(end) + datetime.timedelta(minutes=29, seconds=59)
+
+
 
 class EventModifier(SessionsUsers.BaseHandler):
     def post(self):
@@ -400,7 +404,6 @@ class EventHandler(SessionsUsers.BaseHandler):
         event.put()
         self.redirect("/profile")
 
-
 class UserHandler(SessionsUsers.BaseHandler):
     def get(self):
         pass
@@ -408,14 +411,13 @@ class UserHandler(SessionsUsers.BaseHandler):
     def post(self):
         pass
 
-    def recurring(self):
-      
 webapp2_config = {}
 webapp2_config['webapp2_extras.sessions'] = {
     'secret_key': 'secret_key_123',
 }
 webapp2_config['webapp2_extras.auth'] = {
     'user_model': DatabaseStructures.MUser,
+    'user_attributes':{'first':True,'message':''}
 }
 app = webapp2.WSGIApplication([
     webapp2.Route(r'/', handler=MainPage, name="main"),
@@ -428,6 +430,6 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/create', handler=SessionsUsers.CreateUserHandler, name='create-user'),
     webapp2.Route(r'/event', handler=EventHandler, name='event'),
     webapp2.Route(r'/user', handler=UserHandler, name='user'),
-    webapp2.Route(r'/recurring', handler=RecurringEvents, name='recurring')
+    webapp2.Route(r'/recurring', handler=RecurringEvents, name='recurring'),
     webapp2.Route(r'/search', handler=SearchResults, name="search"),
 ], debug=True, config=webapp2_config)
