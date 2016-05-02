@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+    <title>Search Results</title>
+    Search Results <br><br>
+</head>
+{% autoescape true %}
+<body>
+	User: {{user_name}} <br>
+    Monday events: <br>
+    {% for event in calendar.daily_events['monday'] %}
+        Event #{{loop.index}}
+        Name: {{event.event_name}} <br>
+        Description: {{event.event_description}} <br>
+        Location: {{event.event_location}} <br>
+        Beginning time: {{event.beginning_time}} <br>
+        Ending time: {{event.ending_time}} <br>
+        <br><br>
+    {% endfor %}
+
+    {%for result in search_results %}
+    <a href= "/">{{result.unique_user_name}}</a>
+    <br>
+    {% endfor %}
+
+    <a href="/">home page</a><br>
+
+</body>
+</html>
+{% endautoescape %}
