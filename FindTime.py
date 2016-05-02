@@ -133,13 +133,6 @@ def decode_block(b):
     return datetime.time(hr, min)
 
 
-class RecurringEvents(SessionsUsers.BaseHandler):
-    def get(self):
-        pass
-
-    def post(self):
-        pass
-
 class AddFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
@@ -180,11 +173,11 @@ class AcceptFriend:
             u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
             user_obj = u2[0]
             for friend in user.friends:
-                if friend.username == user2:
+                if(friend.username == user2):
                     friend.status =True
                     friend.pending = False
             for friend in u2.friends:
-                if friend.username == user.unique_user_name:
+                if (friend.username == user.unique_user_name):
                     friend.status = True
                     friend.pending = False
 
@@ -217,6 +210,7 @@ class RemoveFriend:
             logging.error("User not found in the database: " + user)
         self.redirect('/profile?')
 
+
 class Search:
     def search(self):
         search = self.request.get('search')
@@ -225,6 +219,7 @@ class Search:
             return u
         u = DatabaseStructures.MUser.query(search in DatabaseStructures.MUser.unique_user_name or search in DatabaseStructures.MUser.display_name).fetch(all)
         return u
+
 
 class SearchResults(SessionsUsers.BaseHandler):
     def get(self):
@@ -262,7 +257,6 @@ class SearchResults(SessionsUsers.BaseHandler):
                            }
         template = JINJA_ENVIRONMENT.get_template('SearchResults.html')
         self.response.write(template.render(template_values))
-
 
 
 class RecurringEvents(SessionsUsers.BaseHandler):
