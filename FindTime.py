@@ -128,7 +128,6 @@ class AddFriend(SessionsUsers.BaseHandler):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
         user2 = self.request.get('user')
-        logging.error(user2)
         friend1 = DatabaseStructures.Friend(accepted =False,pending=True, username=user.unique_user_name,timestamp=datetime.datetime.now())
         friend2 = DatabaseStructures.Friend(accepted =False,pending=False, username=user2,timestamp=datetime.datetime.now())
         try:
@@ -150,7 +149,7 @@ class AddFriend(SessionsUsers.BaseHandler):
         self.redirect('/profile?')
 
 
-class AcceptFriend:
+class AcceptFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
