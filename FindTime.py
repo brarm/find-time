@@ -12,6 +12,8 @@ import logging
 
 import SessionsUsers
 
+from jinja2.ext import autoescape
+
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
@@ -278,11 +280,6 @@ def encode_block(start, end):
 
 class RecurringEvents(SessionsUsers.BaseHandler):
     def get(self):
-<<<<<<< HEAD
-        template_values = {}
-        template = JINJA_ENVIRONMENT.get_template('recurring.html')
-        self.response.write(template.render(template_values))
-=======
         current_user = get_current_user(self)
         cal = current_user.user_recurring_calendar
         recurring_events = []
@@ -290,7 +287,9 @@ class RecurringEvents(SessionsUsers.BaseHandler):
             for key in getattr(cal, day):
                 recurring_events.append(key.get())
 
->>>>>>> 084d7f216bd51654bd0d3226b279044912c3414a
+        template_values = { 'ids': recurring_events, 'first' : self.session.get('first') }
+        template = JINJA_ENVIRONMENT.get_template('recurring.html')
+        self.response.write(template.render(template_values))
 
     def post(self):
         # blocks will have id in form
@@ -343,8 +342,10 @@ class RecurringEvents(SessionsUsers.BaseHandler):
                 # try this one instead if it doesn't work
                 # current_user.user_nonrecurring_calendar[key].append(event_key)
 
-
-
+        if self.session.get('first'):
+            self.session['first'] = False
+            self.session['message'] = 'Congratulations! You\'ve completed the signup'
+        self.redirect(self.uri_for('profile'))
 
 class EventModifier(SessionsUsers.BaseHandler):
     def post(self):

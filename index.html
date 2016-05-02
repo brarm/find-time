@@ -70,33 +70,12 @@
     <a href="/profile">profile</a><br>
     <a href="/login/">login_page</a><br>
     <a href="/create/">create_user</a><br>
-<<<<<<< HEAD
-    <a href="/logout/">logout</a><br>
-    <form action="/search" method="get">
-      <p>Find some friends</p>
-        Potential Frends:<div><textarea name="search_input" rows="1" cols="30"></textarea></div>
-        <div><input type="submit" value="search"></div>
-    </form>
-    <form action="/add/" method="post">
-      Add Friend: <div><textarea name="user" rows="1" cols="30"></textarea></div></div>
-      <div><input type="submit" value="Add Friend"></div>
-    </form>
-    <form action="/accept/" method="post">
-      Accept Friend: <div><textarea name="user1" rows="1" cols="30"></textarea></div></div>
-      <div><input type="submit" value="Accept Friend"></div>
-    </form>
-    <form action="/remove/" method="post">
-      Remove Friend: <div><textarea name="user2" rows="1" cols="30"></textarea></div></div>
-      <div><input type="submit" value="Remove Friend"></div>
-    </form>
-  </body>
-</html>
-{% endautoescape %}-->
+    <a href="/logout/">logout</a><br> -->
   
 <div>
 <div class="container" >
     <div class="col-md-6" >
-        <div id="logbox">
+        <div id="logbox"  >
             <form id="signup" method="post" action="/create" >
               <h1>Create an Account</h1>
               <input name="username" type="text" placeholder="Username" required class="input pass"/>
@@ -137,4 +116,3 @@ $(document).ready(function () {
 </body>
 {% endautoescape %}
 </html>
->>>>>>> master
