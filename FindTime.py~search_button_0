@@ -7,7 +7,9 @@ import jinja2
 import webapp2
 import datetime
 import DatabaseStructures
+import random
 import logging
+import time
 
 import SessionsUsers
 
@@ -28,11 +30,18 @@ def get_current_user(self):
 class MainPage(SessionsUsers.BaseHandler):
     def get(self):
         hopefully_user = self.auth.get_user_by_session(save_session=True)
-        user_id = None
         if hopefully_user:
-            user_id = get_current_user(self).unique_user_name
+            id = DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).unique_user_name
+            DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).email_address = "butts.com"
+            email = DatabaseStructures.MUser.get_by_id(hopefully_user['user_id']).email_address
+
+        else:
+            id = None
+            email = None
         template_values = {
-            'current_user': user_id,
+            'current_user': id,
+            'email': email,
+            # 'calendar': cal
         }
 
         template = JINJA_ENVIRONMENT.get_template('index.html')
@@ -106,21 +115,12 @@ class ProfilePage(SessionsUsers.BaseHandler):
         self.response.write(template.render(template_values))
 
 
-# returns the day indexed by character c
-def decode_day(c):
-    ascii_index = ord(c)
-    index = ascii_index - 97
-    day = DAYSOFTHEWEEK[index]
-    return day
+class RecurringEvents(SessionsUsers.BaseHandler):
+    def get(self):
+        pass
 
-# returns the start time of a particular block in 30 minute increments (1-48)
-def decode_block(b):
-    b -= 1
-    ampm = 'am' if b < 23 else 'pm'
-    hr = (b / 2) % 24
-    min = 0 if b % 2 is 0 else 30
-    return datetime.time(hr, min)
-
+    def post(self):
+        pass
 
 class AddFriend(SessionsUsers.BaseHandler):
     def post(self):
@@ -176,7 +176,6 @@ class AcceptFriend:
             logging.error("User not found in the database: " + user)
         self.redirect('/profile?')
 
-
 class RemoveFriend:
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
@@ -200,7 +199,6 @@ class RemoveFriend:
             logging.error("User not found in the database: " + user)
         self.redirect('/profile?')
 
-
 class Search:
     def search(self):
         search = self.request.get('search')
@@ -209,7 +207,6 @@ class Search:
             return u
         u = DatabaseStructures.MUser.query(search in DatabaseStructures.MUser.unique_user_name or search in DatabaseStructures.MUser.display_name).fetch(all)
         return u
-
 
 class SearchResults(SessionsUsers.BaseHandler):
     def get(self):
@@ -249,123 +246,54 @@ class SearchResults(SessionsUsers.BaseHandler):
         self.response.write(template.render(template_values))
 
 
-# returns the day indexed by character c
-def decode_day(c):
-    ascii_index = ord(c)
-    index = ascii_index - 97
-    day = DAYSOFTHEWEEK[index]
-    return day
 
 
-# takes a day of the week and returns character index
-def encode_day(day):
-    index = DAYSOFTHEWEEK.index(day)
-    ascii_index = index + 97
-    c = str(unichr(ascii_index))
-    return c
 
-
-# returns the start time of a particular block in 30 minute increments (1-48)
-def decode_block(b):
-    b -= 1
-    hr = (b / 2) % 24
-    minute = 0 if b % 2 is 0 else 30
-    return datetime.time(hr, minute)
-
-
-# returns the blocks between a given start time and end time
-def encode_block(start, end):
-    end -= datetime.timedelta(minutes=29, seconds=59)
-    hour = start.hour
-    minute = start.minute
-    start_block = hour * 2 + (0 if minute is 0 else 1)
-
-    hour = end.hour
-    minute = end.minute
-    end_block = hour * 2 + (0 if minute is 0 else 1)
-
-    return range(start_block, end_block + 1)
 
 
 class RecurringEvents(SessionsUsers.BaseHandler):
     def get(self):
-        current_user = get_current_user(self)
-        cal = current_user.user_recurring_calendar
-        recurring_events = []
-        for day in DAYSOFTHEWEEK:
-            for key in getattr(cal, day):
-                recurring_events.append(key.get())
-
-        
+        pass
 
     def post(self):
-        current_user = get_current_user(self)
-
-        # blocks will have id in form <letter (a-f) = day of week><number (1-48) = 30 min block>
-        event_ids = self.request.get('id', allow_multiple=True)
-        day_groups = {}
-        # block_groups = {}
-
-        for day_of_the_week in DAYSOFTHEWEEK:
-            day_groups[day_of_the_week] = []
-            # block_groups[day_of_the_week] = []
-
-        # create dict of form dict[day] = list(blocks on that day)
-        for ev in event_ids:
-            day_char = str(ev[0])
-            block_num = int(ev[1:])
-
-            day = decode_day(day_char)
-            day_groups[day].append(block_num)
-
-        for key in day_groups.keys():
-            block_nums = day_groups[key]
-
-            block_groups = []
-            start_block = None
-            prev_block = None
-            for block in block_nums:
-                if not start_block:
-                    start_block = block
-                    prev_block = block
-                if block is not prev_block + 1:
-                    block_groups.append((start_block, prev_block))
-                    start_block = block
-                prev_block = block
-
-            for start, end in block_groups:
-                start_time = decode_block(start)
-                end_time = decode_block(end) + datetime.timedelta(minutes=29, seconds=59)
-                event = DatabaseStructures.Event(owner=current_user.unique_user_name,
-                                                 beginning_time=start_time,
-                                                 ending_time=end_time,
-                                                 recurring=True)
-                event_key = event.put()
-                # ALERT. THIS MAY NOT WORK
-                getattr(current_user.user_nonrecurring_calendar, key).append(event_key)
-                # try this one instead if it doesn't work
-                # current_user.user_nonrecurring_calendar[key].append(event_key)
-
-
-class EventModifier(SessionsUsers.BaseHandler):
-    def post(self):
-        event_key = self.request.get('event_key')
-        event = event_key.get()
-        event.location = self.request.get('location')
-        new_invitees = self.request.get('invitees')
-
-        for inv in new_invitees:
-            invitee = DatabaseStructures.Invitee(username=inv,
-                                                 pending=True,
-                                                 accepted=False,
-                                                 timestamp=datetime.datetime.now(),
-                                                 )
-            event.attendees.append(invitee)
-            u = DatabaseStructures.MUSer.get_by_id(inv)
-            u.user_nonrecurring_calendar.events.append(event_key)
-            u.put()
-        event.updated = True
-        event.put()
+        pass
+#
+# class EventCreator(SessionsUsers.BaseHandler):
+#     def get(self):
+#         template = JINJA_ENVIRONMENT.get_template('EventCreator.html')
+#         self.response.write(template.render())
+#
+#     def post(self):
+#         user = get_current_user(self)
+#         if not user.user_nonrecurring_calendar:
+#             user.user_nonrecurring_calendar = DatabaseStructures.TemporaryCalendar()
+#
+#         event = DatabaseStructures.Event()
+#         event.event_name = self.request.get("title")
+#         event.event_location = self.request.get("location")
+#         event.event_description = self.request.get("description")
+#         event.beginning_day = self.request.get("day")
+#         event.ending_day = self.request.get("day")
+#
+#         start_ampm = self.request.get("start_time_ampm")
+#         hr = int(self.request.get("start_time_hr")) % 12
+#         start_hr = hr if start_ampm == "am" else hr + 12
+#         start_min = int(self.request.get("start_time_min"))
+#         start_time = datetime.time(start_hr, start_min)
+#         event.beginning_time = start_time
+#         end_ampm = self.request.get("end_time_ampm")
+#         hr = int(self.request.get("end_time_hr")) % 12
+#         end_hr = hr if end_ampm == "am" else hr + 12
+#         end_min = int(self.request.get("end_time_min"))
+#         end_time = datetime.time(end_hr, end_min)
+#         event.ending_time = end_time
+#
+#         key = event.put()
+#         logging.error(key)
+#         user.user_nonrecurring_calendar.events.append(key)
+#         user.put()
+#
+#         self.redirect('/profile?')
 
 
 class EventHandler(SessionsUsers.BaseHandler):
@@ -379,6 +307,7 @@ class EventHandler(SessionsUsers.BaseHandler):
         location = self.request.get('location')
         description = self.request.get('description')
         invitees = self.request.get('invitees', allow_multiple=True)
+        logging.error("INVITEES IS OF TYPE : " + str(type(invitees)))
         day = self.request.get('day')
 
         today_index = datetime.datetime.today().weekday()
@@ -394,7 +323,6 @@ class EventHandler(SessionsUsers.BaseHandler):
         event.event_location = location
         event.event_description = description
         event.day = date
-        event.owner = current_user.unique_user_name
 
         start_ampm = self.request.get("start_time_ampm")
         hr = int(self.request.get("start_time_hr")) % 12
@@ -410,9 +338,6 @@ class EventHandler(SessionsUsers.BaseHandler):
         event.ending_time = end_time
 
         event_key = event.put()
-
-        current_user.user_nonrecurring_calendar.events.append(event_key)
-
         self.redirect("/profile")
 
         for inv in invitees:
@@ -423,12 +348,8 @@ class EventHandler(SessionsUsers.BaseHandler):
                                                  )
             event.attendees.append(invitee)
             u = DatabaseStructures.MUser.get_by_id(inv)
-
-            if not current_user.user_nonrecurring_calendar:
-                u.user_nonrecurring_calendar = DatabaseStructures.TemporaryCalendar()
             u.user_nonrecurring_calendar.events.append(event_key)
             u.put()
-
 
         logging.error("we got here")
 
@@ -451,9 +372,7 @@ class EventHandler(SessionsUsers.BaseHandler):
             u.user_nonrecurring_calendar.events.append(event_key)
             u.put()
         event.updated = True
-
         event.put()
-        self.redirect("/profile")
 
 
 class UserHandler(SessionsUsers.BaseHandler):
@@ -462,6 +381,7 @@ class UserHandler(SessionsUsers.BaseHandler):
 
     def post(self):
         pass
+
 
 
 webapp2_config = {}
@@ -482,6 +402,5 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/create/', handler=SessionsUsers.CreateUserHandler, name='create-user'),
     webapp2.Route(r'/event/', handler=EventHandler, name='event'),
     webapp2.Route(r'/user/', handler=UserHandler, name='user'),
-    webapp2.Route(r'/populate', handler=RecurringEvents, name="recurring"),
     webapp2.Route(r'/search', handler=SearchResults, name="search"),
 ], debug=True, config=webapp2_config)
