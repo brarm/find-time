@@ -111,13 +111,8 @@ class ProfilePage(SessionsUsers.BaseHandler):
         #friends = user_obj.friends
 
         template_values = {"calendar": one_week_cal,
-<<<<<<< HEAD
-                           "user_name": user.unique_user_name,
-                           "friends": user.friends
-=======
                            "user_name": current_user.unique_user_name,
-                           # "friends": friends
->>>>>>> master
+                           "friends": current_user.friends
                            }
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
         self.response.write(template.render(template_values))
@@ -482,7 +477,7 @@ webapp2_config = {'webapp2_extras.sessions': {'secret_key': 'secret_key_123', },
 
 app = webapp2.WSGIApplication([
     webapp2.Route(r'/', handler=MainPage, name="main"),
-    webapp2.Route(r'/profile/<profile_id>', handler=ProfilePage, name="profile"),
+    webapp2.Route(r'/profile', handler=ProfilePage, name="profile"),
     webapp2.Route(r'/event/create', handler=EventHandler, name="create-event"),
     webapp2.Route(r'/<event>/modify', handler=EventHandler, name="event"),
     webapp2.Route(r'/login', handler=SessionsUsers.LoginHandler, name='login'),
