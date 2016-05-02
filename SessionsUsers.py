@@ -71,12 +71,12 @@ class BaseHandler(webapp2.RequestHandler):
 
 class LoginHandler(BaseHandler):
     def get(self):
-      # set when a user created. should be immediately unset here
+      # set when a user created. should be unset, (in recurring)
       # else all bets off
 
 
       if(self.session.get('first')):
-        self.session['first'] = False
+        self.session['first'] = True
         self.redirect(self.uri_for('recurring'))
       else:
         self.redirect(self.uri_for('main'))
@@ -151,12 +151,12 @@ class CreateUserHandler(BaseHandler):
             user_recurring_calendar=weekcal)
         # temporary_calendar=tempcal, weekly_recurring_schedule=weekcal,
         #                                               email_address=email, friends=friends)
-
+        logging.error(user)
         if not user[0]: #user is a tuple
             logging.error('@@@@@@@@@@@@@')
             logging.error('No user created')
             self.session['message'] = "User not created!"
-            self.redirect('/?')
+            self.redirect(self.uri_for('main'))
         else:
             # User is created, let's try redirecting to login page
             try:

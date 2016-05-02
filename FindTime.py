@@ -9,6 +9,8 @@ import logging
 
 import SessionsUsers
 
+from jinja2.ext import autoescape
+
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
@@ -281,6 +283,8 @@ class RecurringEvents(SessionsUsers.BaseHandler):
             for key in getattr(cal, day):
                 recurring_events.append(key.get())
 
+        template_values = { 'ids': recurring_events, 'first' : self.session.get('first') }
+
         for ev in recurring_events:
             day = encode_day(ev.day)
             block_nums = encode_blocks(ev.beginning_time, ev.ending_time)
@@ -342,6 +346,13 @@ class RecurringEvents(SessionsUsers.BaseHandler):
                 # try this one instead if it doesn't work
                 # current_user.user_nonrecurring_calendar[key].append(event_key)
 
+        if self.session.get('first'):
+            self.session['first'] = False
+            self.session['message'] = 'Congratulations! You\'ve completed the signup'
+        else:
+            self.session['message'] = 'Recurring Calendar saved'
+        
+        self.redirect(self.uri_for('profile'))
 
 class EventModifier(SessionsUsers.BaseHandler):
     def post(self):
