@@ -73,7 +73,6 @@ class LoginHandler(BaseHandler):
     def get(self):
       # set when a user created. should be unset, (in recurring)
       # else all bets off
-      post(self)
       # if(self.session.get('first')):
       #   self.session['first'] = True
       #   self.redirect(self.uri_for())
@@ -81,11 +80,31 @@ class LoginHandler(BaseHandler):
       # else:
       #   self.redirect(self.uri_for('main'))
 
+      return """
+      			<!DOCTYPE hml>
+      			<html>
+      				<head>
+      					<title>webapp2 auth example</title>
+      				</head>
+      				<body>
+      				<form action="%s" method="post">
+      					<fieldset>
+      						<legend>Login form</legend>
+      						<label>Username <input type="text" name="username" placeholder="Your username" /></label>
+      						<label>Password <input type="password" name="password" placeholder="Your password" /></label>
+      					</fieldset>
+      					<button>Login user</button>
+      				</form>
+      			</html>
+      		""" % self.request.url
+
     def post(self):
         """
               username: Get the username from POST dict
               password: Get the password from POST dict
           """
+        logging.error('############')
+        logging.error(self.request.POST)
         username = self.request.POST.get('username')
         password = self.request.POST.get('password')
         # Try to login user with password
@@ -97,6 +116,7 @@ class LoginHandler(BaseHandler):
         except (InvalidAuthIdError, InvalidPasswordError), e:
             # Returns error message to self.response.write in the BaseHandler.dispatcher
             # Currently no message is attached to the exceptions
+            logging.error(e)
             return e
         self.redirect('/?')
 
@@ -142,6 +162,7 @@ class CreateUserHandler(BaseHandler):
         email = self.request.POST.get('user[email]')
         friends = []
         user = self.auth.store.user_model.create_user(username, display_name=display_name, password_raw=password, unique_user_name=username, email_address=email)
+
         # temporary_calendar=tempcal, weekly_recurring_schedule=weekcal,
         #                                               email_address=email, friends=friends)
         logging.error(user)
