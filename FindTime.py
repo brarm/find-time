@@ -94,30 +94,30 @@ class Calendar:
 
 
 class ProfilePage(SessionsUsers.BaseHandler):
-    def get(self):
-        user_key = self.auth.get_user_by_session(save_session=True)
-        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
-        one_week_cal = None
-        if isinstance(user, unicode):
-            user = str(user)
-        if isinstance(user, str):
-            try:
-                u = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user).fetch(1)
-                user_obj = u[0]
-                one_week_cal = Calendar(user_obj)
-            except Exception as e:
-                logging.error(str(type(e)))
-                logging.error(str(e))
-                logging.error("User not found in the database: " + user)
-                one_week_cal = None
-        elif isinstance(user, DatabaseStructures.MUser):
-            one_week_cal = Calendar(user)
+    def get(self, profile_id):
+        current_user = get_current_user(self)
+        dest_user = DatabaseStructures.MUser.get_by_id(profile_id)
+
+        relation_state = None
+
+        one_week_cal = Calendar(dest_user)
+        friends_list = dest_user.friends
+        # dest_user.friends.query(DatabaseStructures.Friend.username == current_user.unique_user_name).fetch()
+        # if not empty, grab first element
+        if current_user == dest_user:
+            relation_state = 'same_user'
+
 
         #friends = user_obj.friends
 
         template_values = {"calendar": one_week_cal,
+<<<<<<< HEAD
                            "user_name": user.unique_user_name,
                            "friends": user.friends
+=======
+                           "user_name": current_user.unique_user_name,
+                           # "friends": friends
+>>>>>>> master
                            }
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
         self.response.write(template.render(template_values))
@@ -476,15 +476,13 @@ class UserHandler(SessionsUsers.BaseHandler):
     def post(self):
         pass
 
-
-webapp2_config = {}
-webapp2_config['webapp2_extras.sessions'] = {'secret_key': 'secret_key_123', }
-webapp2_config['webapp2_extras.auth'] = {'user_model': DatabaseStructures.MUser }
-
+webapp2_config = {'webapp2_extras.sessions': {'secret_key': 'secret_key_123', },
+                  'webapp2_extras.auth': {'user_model': DatabaseStructures.MUser}
+                  }
 
 app = webapp2.WSGIApplication([
     webapp2.Route(r'/', handler=MainPage, name="main"),
-    webapp2.Route(r'/profile', handler=ProfilePage, name="profile"),
+    webapp2.Route(r'/profile/<profile_id>', handler=ProfilePage, name="profile"),
     webapp2.Route(r'/event/create', handler=EventHandler, name="create-event"),
     webapp2.Route(r'/<event>/modify', handler=EventHandler, name="event"),
     webapp2.Route(r'/login', handler=SessionsUsers.LoginHandler, name='login'),
