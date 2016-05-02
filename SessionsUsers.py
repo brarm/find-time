@@ -6,7 +6,7 @@ from webapp2_extras import auth
 from webapp2_extras import sessions
 from webapp2_extras.auth import InvalidAuthIdError
 from webapp2_extras.auth import InvalidPasswordError
-
+import time
 
 def user_required(handler):
     """
@@ -161,7 +161,12 @@ class CreateUserHandler(BaseHandler):
         weekcal = DatabaseStructures.WeeklyRecurringSchedule()
         email = self.request.POST.get('user[email]')
         friends = []
-        user = self.auth.store.user_model.create_user(username, display_name=display_name, password_raw=password, unique_user_name=username, email_address=email)
+
+        user = self.auth.store.user_model.create_user(username,
+                                                      display_name=display_name,
+                                                      password_raw=password,
+                                                      unique_user_name=username,
+                                                      email_address=email)
 
         # temporary_calendar=tempcal, weekly_recurring_schedule=weekcal,
         #                                               email_address=email, friends=friends)
@@ -177,8 +182,11 @@ class CreateUserHandler(BaseHandler):
                 self.auth.get_user_by_password(username, password, save_session=True)
                 logging.error('@@@@@@@@@@@@@')
                 logging.error('New User created!!')
+                time.sleep(3)
                 self.session['first'] = True
-                self.redirect(self.uri_for('recurring'))
+                self.auth.get_user_by_password(username, password, save_session=True)
+                self.redirect('/')
+                # self.redirect(self.uri_for('recurring'))
                 # self.redirect(self.auth_config['login_url'])
             except (AttributeError, KeyError), e:
                 logging.error(e)
