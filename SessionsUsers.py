@@ -187,7 +187,7 @@ class CreateUserHandler(BaseHandler):
                 time.sleep(3)
                 self.session['first'] = True
                 self.auth.get_user_by_password(username, password, save_session=True)
-                template = {'first':True} # mitigates need for self.session['first'], if it works
+                template_values = {'first':True} # mitigates need for self.session['first'], if it works
                 template = FindTime.JINJA_ENVIRONMENT.get_template('recurring.html')
                 self.response.write(template.render(template_values))
                 # self.redirect(self.uri_for('recurring'))

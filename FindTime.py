@@ -97,6 +97,7 @@ class Calendar:
 
 class ProfilePage(SessionsUsers.BaseHandler):
     def get(self):
+        logging.error('&&&&&&&&&&&&&&')
         current_user = get_current_user(self)
         #dest_user = DatabaseStructures.MUser.get_by_id(profile_id)
 
@@ -117,9 +118,9 @@ class ProfilePage(SessionsUsers.BaseHandler):
                            "user_name": current_user.unique_user_name,
                            "friends": current_user.friends
                            }
+        logging.error('HEREEEEEE')
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
         self.response.write(template.render(template_values))
-
 
 class AddFriend(SessionsUsers.BaseHandler):
     def post(self):
@@ -297,13 +298,12 @@ class RecurringEvents(SessionsUsers.BaseHandler):
         self.response.write(template.render(template_values))
 
     def post(self):
+        logging.error("^^^^^^^^^^^^^^")
         # blocks will have id in form
-        pass
-
         current_user = get_current_user(self)
 
         # blocks will have id in form <letter (a-f) = day of week><number (1-48) = 30 min block>
-        event_ids = self.request.get('id', allow_multiple=True)
+        event_ids = self.request.get_all('id')
         day_groups = {}
         # block_groups = {}
 
@@ -353,7 +353,7 @@ class RecurringEvents(SessionsUsers.BaseHandler):
         else:
             self.session['message'] = 'Recurring Calendar saved'
         
-        self.redirect(self.uri_for('profile'))
+        return self.redirect(self.uri_for('profile'))
 
 class EventModifier(SessionsUsers.BaseHandler):
     def post(self):
@@ -427,8 +427,6 @@ class EventHandler(SessionsUsers.BaseHandler):
         current_user.user_nonrecurring_calendar.events.append(event_key)
         current_user.put()
 
-        self.redirect("/profile")
-
         for inv in invitees:
             invitee = DatabaseStructures.Invitee(username=inv,
                                                  pending=True,
@@ -444,6 +442,8 @@ class EventHandler(SessionsUsers.BaseHandler):
             u.put()
 
         event.put()
+
+        self.redirect("/profile")
 
     def create(self):
         event_key = self.request.get('event_key')
