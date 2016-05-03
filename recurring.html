@@ -109,7 +109,7 @@
 	});
 	</script>
 
-	<button class="populate">Submit weekly schedule</button>
+	<!--<button class="populate">Submit weekly schedule</button>-->
 
 	<script>
 		function retrieveAllIDs(form) {
@@ -121,8 +121,9 @@
 		$.each(schedule, function(index, value) {
 			ids['id'].push($(value).attr('id'));
 		});
-			$('form').attr('action', '/recurring' + $.param(ids));
-			console.log( '/recurring' + $.param(ids));
+			$('[name=id]').attr('value', $.param(ids));
+//			$('form').attr('action', '/recurring' + $.param(ids));
+//			console.log( '/recurring' + $.param(ids));
 		}
 	</script>
 
@@ -131,27 +132,28 @@
 		<div><input type="submit" value="Submit weekly schedule" onclick="return retrieveAllIDs(this.form);"></div>
 	</form>
 
-	<script>
+	<!--<script>-->
 
 
-	$(".populate").click(function() {
-		schedule = $('.tdItem').filter(function() {
-			return ($(this).css('background-color') == 'rgb(0, 0, 255)')
-		});
-		var ids = [];
-		$.each(schedule, function(index, value) {
-			ids.push($(value).attr('id'));
-		});
-		var url = '/recurring';
-		// async server call
-		$.ajax({
-			url: url,
-			data: {ids},
-			type: 'POST'
-		});
+	<!--$(".populate").click(function() {-->
+		<!--schedule = $('.tdItem').filter(function() {-->
+			<!--return ($(this).css('background-color') == 'rgb(0, 0, 255)')-->
+		<!--});-->
+		<!--var ids = [];-->
+		<!--$.each(schedule, function(index, value) {-->
+			<!--ids.push($(value).attr('id'));-->
+		<!--});-->
+		<!--var url = '/recurring';-->
+		<!--// async server call-->
+		<!--$.ajax({-->
+			<!--url: url,-->
+			<!--data: {ids},-->
+			<!--type: 'POST'-->
+		<!--});-->
 
-	});
-	</script>
-	
+	<!--});-->
+	<!--</script>-->
+	{{ids}}
+	is this working
 	</body>
 </html>
