@@ -110,8 +110,29 @@
 	</script>
 
 	<button class="populate">Submit weekly schedule</button>
+
 	<script>
-	
+		function retrieveAllIDs(form) {
+			schedule = $('.tdItem').filter(function() {
+			return ($(this).css('background-color') == 'rgb(0, 0, 255)')
+		});
+		var ids = {};
+		ids['id']=[];
+		$.each(schedule, function(index, value) {
+			ids['id'].push($(value).attr('id'));
+		});
+			$('form').attr('action', '/recurring' + $.param(ids));
+			console.log( '/recurring' + $.param(ids));
+		}
+	</script>
+
+	<form action="/recurring" method="post">
+		<input type="hidden" name="id" value=String>
+		<div><input type="submit" value="Submit weekly schedule" onclick="return retrieveAllIDs(this.form);"></div>
+	</form>
+
+	<script>
+
 
 	$(".populate").click(function() {
 		schedule = $('.tdItem').filter(function() {
@@ -128,6 +149,7 @@
 			data: {ids},
 			type: 'POST'
 		});
+
 	});
 	</script>
 	
