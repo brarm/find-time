@@ -33,7 +33,7 @@
             </div>
             <div id="navbar" class="navbar-collapse collapse">
               <ul class="nav navbar-nav">
-                <li><a href="#">Home</a></li>
+                <li><a href="/profile">Home</a></li>
                 <li><a href="/logout">Logout</a></li>
                 <li><a href="/recurring">Edit Recurring</a></li>
                 <li>
@@ -52,15 +52,7 @@
         Title: <div><textarea name="title" rows="1" cols="30"></textarea></div>
         Location: <div><textarea name="location" rows="1" cols="30"></textarea></div>
         Description: <div><textarea name="description" rows="5" cols="30"></textarea></div>
-        Invitees: <div><select multiple name="invitees">
-            {% if friends %}
-                {% for friend in friends %}
-                    {% if friend.accepted == True %}
-                        <option value={{friend.username}}>{{friend.username}}</option>
-                    {% endif %}
-                {%endfor%}
-            {% endif %}
-        </select></div>
+        
         Day: <div><select name="day">
             <option value="monday">Monday</option>
             <option value="tuesday">Tuesday</option>
@@ -127,6 +119,19 @@
         <input type="text" class="form-control" id="location" name="location" placeholder="Enter event location">
         <label for="description">Event Description</label>
         <input type="text" class="form-control" id="description" name="description" placeholder="Enter event description">
+        <label for="description">Invitees</label>
+        <select multiple class="form-control" id="invitees" name="invitees">
+            {% if friends %}
+                {% for friend in friends %}
+                    {% if friend.accepted == True %}
+                        <option value={{friend.username}}>{{friend.username}}</option>
+                    {% endif %}
+                {%endfor%}
+            {% else %}
+                <option selected disable>Go add some friends to Find Time with!</option>
+            {% endif %}
+        </select>
+
       </fieldset>
       <fieldset class="form-group">
         <label for="start_time_hr">Start Time Hour</label>
