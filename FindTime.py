@@ -60,6 +60,7 @@ class Calendar:
     provide functionality to make the javascript display simpler
     """
     # daily_events = {}
+    # event_blocks = {}
 
     def __init__(self, user):
         self.daily_events = {}
@@ -90,6 +91,21 @@ class Calendar:
             for ev in self.daily_events[key]:
                 if not ev:
                     self.daily_events[key].remove(ev)
+
+        self.event_blocks = {}
+        for day in DAYSOFTHEWEEK:
+            blocks = [None] * 48
+
+            for ev in self.daily_events[day]:
+                start = ev.beginning_time
+                end = ev.ending_time
+                block_range = encode_blocks(start, end)
+                for b in block_range:
+                    blocks[b] = (ev.key, ev.recurring)
+
+            self.event_blocks[day] = blocks
+
+
 
     # more functionality to be added to this class based on javascript requirements
 
@@ -135,24 +151,54 @@ class ProfilePage(SessionsUsers.BaseHandler):
                             relation_state = 'accept/cancel'
                             friend_behavior = ("/accept/" + dest_user.unique_user_name, "/remove" + dest_user.unique_user_name)
 
-        requests_for_feed = []
+        feed = []
         if relation_state is 'same_user':
             for friend in current_user.friends:
                 if friend.pending:
-                    requests_for_feed.append(friend)
+                    friendTup = (friend, True, friend.timestamp)
+                    feed.append(friendTup)
+            for event_key in current_user.user_nonrecurring_calendar.events:
+                event = event_key.get()
+                for invitee in event.attendees:
+                    if (invitee.username == current_user.unique_user_name) and (invitee.pending == True):
+                        eventTup = (event, False, invitee.timestamp)
+                        feed.append(eventTup)
+        feed.sort(key=lambda x: x[2])
 
         template_values = {"calendar": one_week_cal,
                            "user_name": dest_user.unique_user_name,
                            "display_name": dest_user.display_name,
                            "friends": friends_list,
                            "relation": relation_state,
-                           "feed": requests_for_feed,
+                           "feed": feed,
                            "friend_behavior": friend_behavior
                            }
 
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
 
         self.response.write(template.render(template_values))
+
+
+class AcceptInvite(SessionsUsers.BaseHandler):
+    def post(self, event):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        for invitee in event.attendees:
+            if invitee.username == user.unique_user_name and invitee.pending ==True:
+                invitee.pending = False
+                invitee.accepted = True
+        self.redirect('/profile?')
+
+class RejectInvite(SessionsUsers.BaseHandler):
+    def post(self, event):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        for invitee in event.attendees:
+            if invitee.username == user.unique_user_name and invitee.pending ==True:
+                invitee.pending = False
+                invitee.accepted = False
+        self.redirect('/profile?')
+
 
 
 class AddFriend(SessionsUsers.BaseHandler):
@@ -554,8 +600,8 @@ class EventHandler(SessionsUsers.BaseHandler):
         end_min = int(self.request.get("end_time_min"))
         end_time = datetime.time(end_hr, end_min)
         event.ending_time = end_time
-        num_hr = start_hr - end_hr
-        num_min = start_min - end_min
+        num_hr = end_hr - start_hr
+        num_min = end_min - start_min
         num_blocks = num_hr * 2 + num_min / 30
         event.num_blocks = num_blocks
 
