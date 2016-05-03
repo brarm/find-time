@@ -83,9 +83,7 @@ class Calendar:
         for event_key in nonrecurring.events:
             event = event_key.get()
             day = event.day
-            logging.error(day)
             day_index = day.weekday()
-            logging.error(day_index)
             day = DAYSOFTHEWEEK[day_index]
             self.daily_events[day].append(event)
         for key in self.daily_events:
@@ -104,15 +102,15 @@ class ProfilePage(SessionsUsers.BaseHandler):
             dest_user = current_user
         else:
             dest_user = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == profile_id).fetch(1)[0]
-        # dest_user = DatabaseStructures.MUser.get_by_id(profile_id)
-        logging.error(dest_user.unique_user_name)
-
         relation_state = None
         one_week_cal = None
         # friends_list = dest_user.friends
         # friends_list = dest_user.friends.query(DatabaseStructures.Friend.username == current_user.unique_user_name)\
         #                                 .fetch()
         friends_list = dest_user.friends
+
+        #friend_behavior is an attribute used to route appropriate buttons for friend actions a user can take from anothers profile
+        friend_behavior = (None, None)
 
         # dest_user.friends.query(DatabaseStructures.Friend.username == current_user.unique_user_name).fetch()
         # if not empty, grab first element
@@ -121,36 +119,71 @@ class ProfilePage(SessionsUsers.BaseHandler):
             one_week_cal = Calendar(dest_user)
         else:
             relation_state = 'stranger'
+            friend_behavior = ("/add/" + dest_user.unique_user_name, friend_behavior[1])
             for friend in friends_list:
                 # ask stathi if accepted flag is required here******
                 if friend.username == current_user.unique_user_name:
                     if friend.pending:
                         relation_state = 'cancel'
+                        friend_behavior = ("/remove/" + dest_user.unique_user_name, friend_behavior[1])
                     else:
                         if friend.accepted:
                             relation_state = 'friend'
+                            friend_behavior = ("/remove/" + dest_user.unique_user_name, friend_behavior[1])
                             one_week_cal = Calendar(dest_user)
                         else:
                             relation_state = 'accept/cancel'
+                            friend_behavior = ("/accept/" + dest_user.unique_user_name, "/remove" + dest_user.unique_user_name)
 
-        requests_for_feed = []
+        feed = []
         if relation_state is 'same_user':
             for friend in current_user.friends:
                 if friend.pending:
-                    requests_for_feed.append(friend)
+                    friendTup = (friend, True, friend.timestamp)
+                    feed.append(friendTup)
+            for event_key in current_user.user_nonrecurring_calendar.events:
+                event = event_key.get()
+                for invitee in event.attendees:
+                    if (invitee.username == current_user.unique_user_name) and (invitee.pending == True):
+                        eventTup = (event, False, invitee.timestamp)
+                        feed.append(eventTup)
+        feed.sort(key=lambda x: x[2])
 
         template_values = {"calendar": one_week_cal,
                            "user_name": dest_user.unique_user_name,
                            "display_name": dest_user.display_name,
                            "friends": friends_list,
                            "relation": relation_state,
-                           "feed": requests_for_feed,
+                           "feed": feed,
+                           "friend_behavior": friend_behavior
                            }
-        logging.error('HEREEEEEE')
 
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
 
         self.response.write(template.render(template_values))
+
+
+class AcceptInvite(SessionsUsers.BaseHandler):
+    def post(self, event):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        for invitee in event.attendees:
+            if invitee.username == user.unique_user_name and invitee.pending ==True:
+                invitee.pending = False
+                invitee.accepted = True
+        self.redirect('/profile?')
+
+class RejectInvite(SessionsUsers.BaseHandler):
+    def post(self, event):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        for invitee in event.attendees:
+            if invitee.username == user.unique_user_name and invitee.pending ==True:
+                invitee.pending = False
+                invitee.accepted = False
+        self.redirect('/profile?')
+
+
 
 class AddFriend(SessionsUsers.BaseHandler):
     def post(self):
@@ -180,6 +213,38 @@ class AddFriend(SessionsUsers.BaseHandler):
         self.redirect('/profile?')
 
 
+#Matt's Friend Handler - handles add friend from their profile page
+class AddFriend2(SessionsUsers.BaseHandler):
+    def post(self, profile_id):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        logging.error("$$$$$$$$$$$$$$$$$$$$$$" + profile_id)
+        user2 = profile_id
+        logging.error("$$$$$$$$$$$$$$$$$$$$$$" + user2)
+        friend1 = DatabaseStructures.Friend(accepted=False, pending=True, username=user.unique_user_name,
+                                            timestamp=datetime.datetime.now())
+        friend2 = DatabaseStructures.Friend(accepted=False, pending=False, username=user2,
+                                            timestamp=datetime.datetime.now())
+        try:
+            u2 = DatabaseStructures.MUser.query(user2 == DatabaseStructures.MUser.unique_user_name).fetch(1)
+            user_obj = u2[0]
+            if user.friends is None:
+                user.friends = ndb.StructuredProperty(DatabaseStructures.Friend, repeated=True)
+            if user_obj.friends is None:
+                user_obj.friends = ndb.StructuredProperty(DatabaseStructures.Friend, repeated=True)
+            user.friends.append(friend2)
+            user_obj.friends.append(friend1)
+            user.put()
+            user_obj.put()
+
+        except Exception as e:
+            logging.error(str(type(e)))
+            logging.error(str(e))
+            logging.error("User not found in the database: " + user.unique_user_name)
+        self.redirect('/profile?')
+
+
+
 class AcceptFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
@@ -206,11 +271,61 @@ class AcceptFriend(SessionsUsers.BaseHandler):
         self.redirect('/profile?')
 
 
+#Matt's Accept Friend From Profile Page Handler
+class AcceptFriend2(SessionsUsers.BaseHandler):
+    def post(self, profile_id):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        user2 = profile_id
+        try:
+            u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
+            user_obj = u2[0]
+            for friend in user.friends:
+                if friend.username == user2:
+                    friend.accepted = True
+                    friend.pending = False
+            for friend in user_obj.friends:
+                if friend.username == user.unique_user_name:
+                    friend.accepted = True
+                    friend.pending = False
+            user.put()
+            user_obj.put()
+
+        except Exception as e:
+            logging.error(str(type(e)))
+            logging.error(str(e))
+            logging.error("User not found in the database: " + user.unique_user_name)
+        self.redirect('/profile?')
+
+
 class RemoveFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
         user2 = self.request.get('user')
+        try:
+            u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
+            user_obj = u2[0]
+            for friend in user.friends:
+                if friend.username == user2:
+                    user.friends.remove(friend)
+            for friend in user_obj.friends:
+                if friend.username == user.unique_user_name:
+                    user_obj.friends.remove(friend)
+            user.put()
+            user_obj.put()
+        except Exception as e:
+            logging.error(str(type(e)))
+            logging.error(str(e))
+            logging.error("User not found in the database: " + user.unique_user_name)
+        self.redirect('/profile?')
+
+#Matt's Remove Friend From Profile Page Handler
+class RemoveFriend2(SessionsUsers.BaseHandler):
+    def post(self, profile_id):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        user2 = profile_id
         try:
             u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
             user_obj = u2[0]
@@ -292,13 +407,14 @@ def encode_day(day):
 def decode_block(b):
     b -= 1
     hr = (b / 2) % 24
-    minute = 0 if b % 2 is 0 else 30
-    return datetime.time(hr, minute)
+    m = 0 if b % 2 is 0 else 30
+    return datetime.datetime(100, 1, 1, hour=hr, minute=m)
+    # return datetime.time(hr, minute)
 
 
 # returns the blocks between a given start time and end time
 def encode_blocks(start, end):
-    end -= datetime.timedelta(minutes=29, seconds=59)
+    end = (datetime.datetime(100, 1, 1, end.hour, end.minute) - datetime.timedelta(minutes=29, seconds=59)).time()
     hour = start.hour
     minute = start.minute
     start_block = hour * 2 + (0 if minute is 0 else 1)
@@ -313,6 +429,8 @@ def encode_blocks(start, end):
 class RecurringEvents(SessionsUsers.BaseHandler):
     def get(self):
         current_user = get_current_user(self)
+        if not current_user.user_recurring_calendar:
+            current_user.user_recurring_calendar = DatabaseStructures.WeeklyRecurringSchedule()
         cal = current_user.user_recurring_calendar
         recurring_events = []
         blocks = []
@@ -320,30 +438,35 @@ class RecurringEvents(SessionsUsers.BaseHandler):
             for key in getattr(cal, day):
                 recurring_events.append(key.get())
 
-        template_values = { 'ids': recurring_events, 'first' : self.session.get('first') }
+        template_values = {'ids': recurring_events, 'first': self.session.get('first')}
 
         for ev in recurring_events:
-            day = encode_day(ev.day)
-            block_nums = encode_blocks(ev.beginning_time, ev.ending_time)
-            for b in block_nums:
-                blocks.append(day + str(b))
+            if ev:
+                day = encode_day(ev.recurring_day)
+                block_nums = encode_blocks(ev.beginning_time, ev.ending_time)
+                for b in block_nums:
+                    blocks.append(day + str(b))
 
-        template_values = {"id": blocks}
+        template_values = {"ids": blocks}
         template = JINJA_ENVIRONMENT.get_template('recurring.html')
         self.response.write(template.render(template_values))
 
     def post(self):
-        logging.error("^^^^^^^^^^^^^^")
         # blocks will have id in form
         current_user = get_current_user(self)
-        logging.error("*** before")
+        if not current_user.user_recurring_calendar:
+            current_user.user_recurring_calendar = DatabaseStructures.WeeklyRecurringSchedule()
+        logging.error("before: " + str(current_user.user_recurring_calendar))
+        for day in DAYSOFTHEWEEK:
+            del getattr(current_user.user_recurring_calendar, day)[:]
+        logging.error("after: " + str(current_user.user_recurring_calendar))
         # blocks will have id in form <letter (a-f) = day of week><number (1-48) = 30 min block>
-        event_ids = self.request.get_all('id')
+        event_ids = []
         e = self.request.get('id')
-        logging.error("*** after: " + str(event_ids))
-        logging.error("*** next: " + str(type(e)))
-        logging.error(str(e))
-        logging.error(self.request.POST)
+        event_strings = str(e).split('&')
+        for ev in event_strings:
+            unused, event_string = ev.split('=')
+            event_ids.append(event_string)
         day_groups = {}
         # block_groups = {}
 
@@ -368,27 +491,25 @@ class RecurringEvents(SessionsUsers.BaseHandler):
             for block in block_nums:
                 if not start_block:
                     start_block = block
-                    prev_block = block
-                if block is not prev_block + 1:
+                elif block is not prev_block + 1:
                     block_groups.append((start_block, prev_block))
                     start_block = block
+                elif block is block_nums[-1]:
+                    block_groups.append((start_block, block))
                 prev_block = block
-
             for start, end in block_groups:
-                numBlocks = end - start + 1
-                start_time = decode_block(start)
-                end_time = decode_block(end) + datetime.timedelta(minutes=29, seconds=59)
+                numblocks = end - start + 1
+                start_time = decode_block(start).time()
+                end_time = (decode_block(end) + datetime.timedelta(minutes=29, seconds=59)).time()
                 event = DatabaseStructures.Event(owner=current_user.unique_user_name,
                                                  beginning_time=start_time,
                                                  ending_time=end_time,
                                                  recurring=True,
-                                                 num_blocks=numBlocks)
+                                                 num_blocks=numblocks,
+                                                 recurring_day=key)
                 event_key = event.put()
-                # ALERT. THIS MAY NOT WORK
-                getattr(current_user.user_nonrecurring_calendar, key).append(event_key)
-                # try this one instead if it doesn't work
-                # current_user.user_nonrecurring_calendar[key].append(event_key)
-
+                getattr(current_user.user_recurring_calendar, key).append(event_key)
+        current_user.put()
         if self.session.get('first'):
             self.session['first'] = False
             self.session['message'] = 'Congratulations! You\'ve completed the signup'
@@ -463,8 +584,8 @@ class EventHandler(SessionsUsers.BaseHandler):
         end_min = int(self.request.get("end_time_min"))
         end_time = datetime.time(end_hr, end_min)
         event.ending_time = end_time
-        num_hr = start_hr - end_hr
-        num_min = start_min - end_min
+        num_hr = end_hr - start_hr
+        num_min = end_min - start_min
         num_blocks = num_hr * 2 + num_min / 30
         event.num_blocks = num_blocks
 
@@ -541,7 +662,10 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/recurring', handler=RecurringEvents, name='recurring'),
     webapp2.Route(r'/search', handler=SearchResults, name="search"),
     webapp2.Route(r'/add/', handler=AddFriend, name='add-friend'),
+    webapp2.Route(r'/add/<profile_id>', handler=AddFriend2, name='add-friend'),
     webapp2.Route(r'/remove/', handler=RemoveFriend, name='remove-friend'),
+    webapp2.Route(r'/remove/<profile_id>', handler=RemoveFriend2, name='remove-friend'),
     webapp2.Route(r'/accept/', handler=AcceptFriend, name='accept-friend'),
+    webapp2.Route(r'/accept/<profile_id>', handler=AcceptFriend2, name='accept-friend'),
     webapp2.Route(r'/test', handler=TestPage, name='test'),
 ], debug=True, config=webapp2_config)

@@ -617,9 +617,42 @@
         user name: {{user_name}} <br>
         display name: {{display_name}} <br>
         relation: {{relation}} <br>
+          {% for name in feed %}
+                {% if name[1]%}
+                    Friend Request From:
+                    Time: {{name[2]}}
+                    <br><br>
+                {% else %}
+                    Invitee Request From: {{name[0].owner}}
+                    Time: {{name[2]}}
+                    <br><br>
+                {% endif %}
+          {% endfor %}
       </div>
     </div>
     </div>
+
+
+    {% if relation == 'stranger' %}
+        <form action={{friend_behavior[0]}} method="post">
+          <div><input type="submit" value="Add Friend" name="user"></div>
+        </form>
+    {% endif %}
+
+    {% if relation == 'cancel' %}
+        <form action={{friend_behavior[0]}} method="post">
+          <div><input type="submit" value="Cancel Friend Request" name="user"></div>
+        </form>
+    {% endif %}
+
+    {% if relation == 'accept/cancel' %}
+        <form action={{friend_behavior[0]}} method="post">
+          <div><input type="submit" value="Accept Friend Request" name="user"></div>
+        </form>
+        <form action={{friend_behavior[1]}} method="post">
+          <div><input type="submit" value="Deny Friend Request" name="user"></div>
+        </form>
+    {% endif %}
 
 
     <a href="/">home page</a><br>

@@ -131,8 +131,6 @@
 	});
 	</script>
 
-	<button class="populate">Submit weekly schedule</button>
-
 	<script>
 		function retrieveAllIDs(form) {
 			schedule = $('.tdItem').filter(function() {
@@ -143,8 +141,8 @@
 		$.each(schedule, function(index, value) {
 			ids['id'].push($(value).attr('id'));
 		});
-		$('form').attr('action', '/recurring?' + $.param(ids));
-		console.log( '/recurring' + $.param(ids));
+		$('[name=id]').attr('value', $.param(ids));
+
 		}
 	</script>
 
@@ -152,6 +150,9 @@
 		<input type="hidden" name="id" value=String>
 		<div><input type="submit" value="Submit weekly schedule" onclick="return retrieveAllIDs(this.form);"></div>
 	</form>
-	
+
+	{{ids}}
+	is this working
+
 	</body>
 </html>

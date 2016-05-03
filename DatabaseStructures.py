@@ -37,6 +37,7 @@ class Event(ndb.Model):
     event_location = ndb.StringProperty(indexed=False)
     event_description = ndb.TextProperty(indexed=False)
     recurring = ndb.BooleanProperty(indexed=False, default=False)
+    recurring_day = ndb.StringProperty(indexed=True)
     num_blocks = ndb.IntegerProperty(indexed=False)
 
 
