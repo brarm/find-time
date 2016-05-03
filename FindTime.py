@@ -584,8 +584,8 @@ class EventHandler(SessionsUsers.BaseHandler):
         end_min = int(self.request.get("end_time_min"))
         end_time = datetime.time(end_hr, end_min)
         event.ending_time = end_time
-        num_hr = start_hr - end_hr
-        num_min = start_min - end_min
+        num_hr = end_hr - start_hr
+        num_min = end_min - start_min
         num_blocks = num_hr * 2 + num_min / 30
         event.num_blocks = num_blocks
 
