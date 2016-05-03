@@ -399,9 +399,14 @@ class SearchResults(SessionsUsers.BaseHandler):
         elif isinstance(user, DatabaseStructures.MUser):
             one_week_cal = Calendar(user)
 
+        logging.error("%%%%%%%%%%%%%%%%" + self.request.get('search_input'))
         search = self.request.get('search_input')
-        search_results = DatabaseStructures.MUser.query(search == DatabaseStructures.MUser.unique_user_name or
-                                                        search == DatabaseStructures.MUser.display_name).fetch(1)
+        logging.error("%%%%%%%%%%%%%%%%" + search)
+
+        search_results = DatabaseStructures.MUser.query(search == DatabaseStructures.MUser.unique_user_name or search == DatabaseStructures.MUser.display_name).fetch(1)
+
+
+        logging.error(len(search_results))
         if len(search_results) is 0:
             logging.error("user name didn't match anything")
             list_of_all_users = DatabaseStructures.MUser.query().fetch()
