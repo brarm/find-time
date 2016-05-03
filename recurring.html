@@ -90,6 +90,60 @@
 	<div class="panel">
 	</div>
 
+	{% if first %}
+		<script>
+	function parseIds(list) {
+		var dict = {};
+		for(var x = 0; x < list.length; x++) {
+			var id = list[x];
+			var num = id.slice(0,1);
+			var time = parseInt(id.slice(1));
+			if(dict[num]) dict[num][time] = true;
+			else dict[num] = {time:true}
+		}
+		return dict;
+	}
+
+		var x = document.getElementsByClassName('panel')[0];
+		var grid = document.createElement('table');
+		grid.className = 'grid';
+    	x.appendChild(grid);
+    	var day_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+    	var col_headers = ['Time','M','T','W','Th','F','Sa','Su'];
+    	var hour = 12;
+
+    	for(var x=0; x<49; x++) {
+    		var tr = grid.appendChild(document.createElement('tr'));
+
+    		if(x == 0) {
+    			$.each(col_headers, function( index, value ) {
+    				var th = tr.appendChild(document.createElement('th'));
+    				$(th).text(value)
+    			})
+    		}
+    		else {
+    			for(var y=0; y<7; y++) {
+    				if(y == 0) {
+    					var th = tr.appendChild(document.createElement('th'));
+    					$(th).text(function() {
+    						var string = ''
+    						if(x % 2 != 0) {
+    							string += hour+ ':00';
+    							hour = (hour+1) % 12;
+    							if(hour == 0) hour = 12;
+    						}
+    						return string ;
+    					})
+    				}
+
+    				var cell = tr.appendChild(document.createElement('td'));
+    				cell.className = 'tdItem';
+    				$(cell).prop("id", day_letters[y] + x);
+    			}
+    		}
+    	}
+	</script>
+	{% else %}
 	<script>
 	function parseIds(list) {
 		var dict = {};
@@ -111,8 +165,9 @@
     	var col_headers = ['Time','M','T','W','Th','F','Sa','Su'];
     	var hour = 12;
 
-    	var prev = {{ids|safe}}
-    	var dict = parseIds(prev);
+		var prev = {{ids|safe}};
+		var dict = parseIds(prev);
+
     	console.log(dict);
 
     	for(var x=0; x<49; x++) {
@@ -143,14 +198,17 @@
     				cell.className = 'tdItem';
     				$(cell).prop("id", day_letters[y] + x);
 
-    				// set color or not
-    				if( dict[day_letters[y]]) {
-    					if(dict[day_letters[y]][x]) $(cell).css('background-color','rgb(0, 0, 255)');
-    				}
+
+					if( dict[day_letters[y]])
+						if(dict[day_letters[y]][x])
+							$(cell).css('background-color','rgb(0, 0, 255)');
+
+
     			}
     		}
     	}    
 	</script>
+	{% endif %}
 
 	<script>
 	$(document).ready(function(){

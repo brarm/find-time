@@ -479,7 +479,8 @@ class RecurringEvents(SessionsUsers.BaseHandler):
                 block_nums = encode_blocks(ev.beginning_time, ev.ending_time)
                 for b in block_nums:
                     blocks.append(day + str(b))
-
+        if len(blocks) is 0:
+            template_values = {"ids": [], 'first': self.session.get('first')}
         template_values = {"ids": blocks, 'first': self.session.get('first')}
         template = JINJA_ENVIRONMENT.get_template('recurring.html')
         self.response.write(template.render(template_values))
