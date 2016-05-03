@@ -695,8 +695,10 @@
             <td class="event">{{calendar.event_blocks[day][i]}}
               <a href="/profile">event</a>
             </td>
+          {% elif calendar.event_blocks[day][i][1]%}
+            <td class="nonevent">recurring</td>
           {%else%}
-            <td class="nonevent">none or recurring</td>
+            <td class="nonevent">none</td>
           {%endif%}
         {%endfor%}
       </tr>
