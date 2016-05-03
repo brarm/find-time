@@ -466,10 +466,11 @@ class EventHandler(SessionsUsers.BaseHandler):
                                                  timestamp=datetime.datetime.now(),
                                                  )
             event.attendees.append(invitee)
-            u = DatabaseStructures.MUser.get_by_id(inv)
-
-            if not current_user.user_nonrecurring_calendar:
+            u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == inv).fetch(1)
+            u = u2[0]
+            if not u.user_nonrecurring_calendar:
                 u.user_nonrecurring_calendar = DatabaseStructures.TemporaryCalendar()
+
             u.user_nonrecurring_calendar.events.append(event_key)
             u.put()
 
