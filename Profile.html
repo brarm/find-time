@@ -58,9 +58,9 @@
             <td class="event"><a href="/event/view/{{calendar.event_blocks[day][i][0].id()}}">{{calendar.event_blocks[day][i][2]}}</a>
             </td>
           {% elif calendar.event_blocks[day][i][1]%}
-            <td class="nonevent"></td>
-          {%else%}
             <td class="nonevent" bgcolor="gray"></td>
+          {%else%}
+            <td class="nonevent"></td>
           {%endif%}
         {%endfor%}
       </tr>
