@@ -99,20 +99,33 @@ class ProfilePage(SessionsUsers.BaseHandler):
         dest_user = DatabaseStructures.MUser.get_by_id(profile_id)
 
         relation_state = None
-
-        one_week_cal = Calendar(dest_user)
+        one_week_cal = None
+        # friends_list = dest_user.friends
+        # friends_list = dest_user.friends.query(DatabaseStructures.Friend.username == current_user.unique_user_name)\
+        #                                 .fetch()
         friends_list = dest_user.friends
+
         # dest_user.friends.query(DatabaseStructures.Friend.username == current_user.unique_user_name).fetch()
         # if not empty, grab first element
-        if current_user == dest_user:
+        if current_user.unique_user_name == dest_user.unique_user_name:
             relation_state = 'same_user'
-
-
-        #friends = user_obj.friends
+            one_week_cal = Calendar(dest_user)
+        else:
+            relation_state = 'stranger'
+            for friend in friends_list:
+                # ask stathi if accepted flag is required here******
+                if friend.username == current_user.unique_user_name:
+                    if friend.pending:
+                        relation_state = 'pending'
+                    else:
+                        relation_state = 'friend'
+                        one_week_cal = Calendar(dest_user)
 
         template_values = {"calendar": one_week_cal,
-                           "user_name": current_user.unique_user_name,
-                           # "friends": friends
+                           "user_name": dest_user.unique_user_name,
+                           "display_name": dest_user.display_name,
+                           "friends": friends_list,
+                           "relation": relation_state
                            }
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
         self.response.write(template.render(template_values))
