@@ -82,7 +82,9 @@ class Calendar:
         for event_key in nonrecurring.events:
             event = event_key.get()
             day = event.day
-            day_index = datetime.datetime.today().weekday()
+            logging.error(day)
+            day_index = day.weekday()
+            logging.error(day_index)
             day = DAYSOFTHEWEEK[day_index]
             self.daily_events[day].append(event)
         for key in self.daily_events:
