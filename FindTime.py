@@ -181,13 +181,15 @@ class ProfilePage(SessionsUsers.BaseHandler):
 
 
 class AcceptInvite(SessionsUsers.BaseHandler):
-    def post(self, event):
+    def post(self, unique_id=None):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        event = DatabaseStructures.Event.get_by_id(int(unique_id))
         for invitee in event.attendees:
             if invitee.username == user.unique_user_name and invitee.pending ==True:
                 invitee.pending = False
                 invitee.accepted = True
+        event.put()
         self.redirect('/profile?')
 
 class RejectInvite(SessionsUsers.BaseHandler):
@@ -198,6 +200,7 @@ class RejectInvite(SessionsUsers.BaseHandler):
             if invitee.username == user.unique_user_name and invitee.pending ==True:
                 invitee.pending = False
                 invitee.accepted = False
+        event.put()
         self.redirect('/profile?')
 
 
@@ -360,7 +363,6 @@ class RemoveFriend2(SessionsUsers.BaseHandler):
             logging.error("User not found in the database: " + user.unique_user_name)
         self.redirect('/profile?')
 
-
 class SearchResults(SessionsUsers.BaseHandler):
     def get(self):
         user_key = self.auth.get_user_by_session(save_session=True)
@@ -455,8 +457,6 @@ class RecurringEvents(SessionsUsers.BaseHandler):
             for key in getattr(cal, day):
                 recurring_events.append(key.get())
 
-        template_values = {'ids': recurring_events, 'first': self.session.get('first')}
-
         for ev in recurring_events:
             if ev:
                 day = encode_day(ev.recurring_day)
@@ -464,7 +464,7 @@ class RecurringEvents(SessionsUsers.BaseHandler):
                 for b in block_nums:
                     blocks.append(day + str(b))
 
-        template_values = {"ids": blocks}
+        template_values = {"ids": blocks, 'first': self.session.get('first')}
         template = JINJA_ENVIRONMENT.get_template('recurring.html')
         self.response.write(template.render(template_values))
 
@@ -685,4 +685,7 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/accept/', handler=AcceptFriend, name='accept-friend'),
     webapp2.Route(r'/accept/<profile_id>', handler=AcceptFriend2, name='accept-friend'),
     webapp2.Route(r'/test', handler=TestPage, name='test'),
+    webapp2.Route(r'/acceptinvite', handler=AcceptInvite, name='acceptinvite'),
+    webapp2.Route(r'/acceptinvite/<unique_id>', handler=AcceptInvite, name='acceptinvite'),
+    webapp2.Route(r'/rejectinvite', handler=RejectInvite, name='rejectinvite'),
 ], debug=True, config=webapp2_config)
