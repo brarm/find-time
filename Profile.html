@@ -40,169 +40,33 @@
     </nav>
     </div>
 
-    
-
-    <script type="text/javascript">
-      function parse_cal() {
-
-      }
-    </script>
-
-    <script>
-    function test_func(data) {
-      console.log(data);
-    }
-
-    $(document).ready(function(){
-      var disp = document.getElementsByClassName('container')[1];
-      var grid = document.createElement('table');
-      grid.className = 'calendar';
-      disp.appendChild(grid);
-      
-      // header row
-      var col_headers = ['Time','M','T','W','Th','F','Sa','Su'];
-
-      // <thead>
-      //     <tr>
-      //         <th>&nbsp;</th>
-      //         <th width="20%">Sunday</th>
-      //         <th width="20%">Monday</th>
-      //         <th width="20%">Tuesday</th>
-      //         <th width="20%">Wednesday</th>
-      //         <th width="20%">Thursday</th>
-      //     </tr>
-      // </thead>
-
-      var head = document.createElement('thead');
-      var row = document.createElement('tr');
-
-      $.each(col_headers, function( index, value ) {
-        var th = row.appendChild(document.createElement('th'));
-        $(th).text(value);
-      })
-
-      head.appendChild(row);
-      grid.appendChild(head);
-
-      // $(row).prepend(head)
-      // $(grid).prepend(row);
-    })
-    </script>
-
-    <div>
-
-    <div class="jumbotron">
-      <div class="container" id="calendar-container">
-      
-
-
-
-        <h1>Hello, world!</h1>
-        User: {{user_name}} <br>
-        {% if calendar %}
-            Monday events: <br>
-            {% for event in calendar.daily_events['monday'] %}
-                Event #{{loop.index}}
-                Name: {{event.event_name}} <br>
-                Description: {{event.event_description}} <br>
-                Location: {{event.event_location}} <br>
-                Beginning time: {{event.beginning_time}} <br>
-                Ending time: {{event.ending_time}} <br>
-                <br><br>
-            {% endfor %}
-            <br>
-
-            Tuesday events: <br>
-            {% for event in calendar.daily_events['tuesday'] %}
-                Event #{{loop.index}}
-                Name: {{event.event_name}} <br>
-                Description: {{event.event_description}} <br>
-                Location: {{event.event_location}} <br>
-                Beginning time: {{event.beginning_time}} <br>
-                Ending time: {{event.ending_time}} <br>
-                <br><br>
-            {% endfor %}
-            <br>
-
-            Wednesday events: <br>
-            {% for event in calendar.daily_events['wednesday'] %}
-                Event #{{loop.index}}
-                Name: {{event.event_name}} <br>
-                Description: {{event.event_description}} <br>
-                Location: {{event.event_location}} <br>
-                Beginning time: {{event.beginning_time}} <br>
-                Ending time: {{event.ending_time}} <br>
-                <br><br>
-            {% endfor %}
-            <br>
-
-            Thursday events: <br>
-            {% for event in calendar.daily_events['thursday'] %}
-                Event #{{loop.index}}
-                Name: {{event.event_name}} <br>
-                Description: {{event.event_description}} <br>
-                Location: {{event.event_location}} <br>
-                Beginning time: {{event.beginning_time}} <br>
-                Ending time: {{event.ending_time}} <br>
-                <br><br>
-            {% endfor %}
-            <br>
-
-            Friday events: <br>
-            {% for event in calendar.daily_events['friday'] %}
-                Event #{{loop.index}}
-                Name: {{event.event_name}} <br>
-                Description: {{event.event_description}} <br>
-                Location: {{event.event_location}} <br>
-                Beginning time: {{event.beginning_time}} <br>
-                Ending time: {{event.ending_time}} <br>
-                <br><br>
-            {% endfor %}
-            <br>
-
-            Saturday events: <br>
-            {% for event in calendar.daily_events['saturday'] %}
-                Event #{{loop.index}}
-                Name: {{event.event_name}} <br>
-                Description: {{event.event_description}} <br>
-                Location: {{event.event_location}} <br>
-                Beginning time: {{event.beginning_time}} <br>
-                Ending time: {{event.ending_time}} <br>
-                <br><br>
-            {% endfor %}
-            <br>
-
-            Sunday events: <br>
-            {% for event in calendar.daily_events['sunday'] %}
-                Event #{{loop.index}}
-                Name: {{event.event_name}} <br>
-                Description: {{event.event_description}} <br>
-                Location: {{event.event_location}} <br>
-                Beginning time: {{event.beginning_time}} <br>
-                Ending time: {{event.ending_time}} <br>
-                <br><br>
-            {% endfor %}
-            <br>
-        {% endif %}
-
-        user name: {{user_name}} <br>
-        display name: {{display_name}} <br>
-        relation: {{relation}} <br>
-          {% for name in feed %}
-                {% if name[1]%}
-                    Friend Request From:
-                    Time: {{name[2]}}
-                    <br><br>
-                {% else %}
-                    Invitee Request From: {{name[0].owner}}
-                    Time: {{name[2]}}
-                    <br><br>
-                {% endif %}
-          {% endfor %}
-      </div>
-    </div>
-    </div>
-
+    {%if calendar != None %}
+    <table>
+      <tr>
+        <th>Time</th>
+        {%for ColumnHeader in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']%}
+        <th>{{ColumnHeader}}</th>
+        {% endfor%}
+      </tr>
+    {% for i in range(0,48) %}
+      <tr>
+        {% for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']%}
+          {%if day == 'monday'%}
+          <td>{{calendar.time_decoding[i]}}</td>
+          {%endif%}
+          {% if calendar.event_blocks[day][i][0] != None and calendar.event_blocks[day][i][1] == False %}
+            <td class="event"><a href="/event/view/{{calendar.event_blocks[day][i][0].id()}}">{{calendar.event_blocks[day][i][2]}}</a>
+            </td>
+          {% elif calendar.event_blocks[day][i][1]%}
+            <td class="nonevent"></td>
+          {%else%}
+            <td class="nonevent" bgcolor="gray"></td>
+          {%endif%}
+        {%endfor%}
+      </tr>
+    {%endfor%}
+    </table>
+    {%endif%}
 
     {% if relation == 'stranger' %}
         <form action={{friend_behavior[0]}} method="post">
@@ -225,6 +89,4 @@
         </form>
     {% endif %}
 
-
-    <a href="/">home page</a><br>
 </body>

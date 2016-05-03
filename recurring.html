@@ -111,9 +111,9 @@
     	var col_headers = ['Time','M','T','W','Th','F','Sa','Su'];
     	var hour = 12;
 
-    	var prev = {{ ids|safe }}
-    	var dict = parseIds(prev)
-    	console.log(dict)
+    	var prev = {{ids|safe}}
+    	var dict = parseIds(prev);
+    	console.log(dict);
 
     	for(var x=0; x<49; x++) {
     		var tr = grid.appendChild(document.createElement('tr'));

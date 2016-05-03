@@ -1,3 +1,57 @@
 body {
   padding-top: 70px;
 }
+#calendargoeshere {
+	background-color:blue;
+	width:1000px;
+	margin-left: auto;
+	margin-right: auto;
+	height:500px;
+}
+#subcalendarcontainer {
+	background-color:green;
+	width:1000px;
+	margin-left: auto;
+	margin-right: auto;
+	height:250px;
+	text-align: center;
+}
+#detailsgohere{
+	background-color:red;
+	width:475px;
+	height:240px;
+	display: inline-block;
+}
+#feedgoeshere{
+	background-color:orange;
+	width:475px;
+	height:240px;
+	display: inline-block;
+}
+td {
+	width:150px;
+	height:10px;
+    border: 1px solid black;
+    text-align: center;
+}
+
+	
+td .event{
+	background-color: red;
+}
+
+table {
+	border: 1px solid black;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+
+th {
+	width:150px;
+	height:50px;
+    background-color: #4CAF50;
+    color: white;
+    border: 1px solid black;
+    text-align: center;
+}

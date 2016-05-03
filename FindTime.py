@@ -102,11 +102,16 @@ class Calendar:
                 end = ev.ending_time
                 block_range = encode_blocks(start, end)
                 for b in block_range:
-                    blocks[b] = (ev.key, ev.recurring)
-            logging.error("****" + str(blocks))
+                    blocks[b] = (ev.key, ev.recurring, ev.event_name)
             self.event_blocks[day] = blocks
 
-
+        self.time_decoding = {}
+        midnight = datetime.datetime(100, 1, 1, 12, 0)
+        for i in range(0, 48):
+            if midnight.hour is 13:
+                midnight = datetime.datetime(100, 1, 1, 1, 0)
+            self.time_decoding[i] = str(midnight.time())
+            midnight += datetime.timedelta(minutes=30)
 
     # more functionality to be added to this class based on javascript requirements
 
@@ -179,15 +184,29 @@ class ProfilePage(SessionsUsers.BaseHandler):
 
         self.response.write(template.render(template_values))
 
-
-class AcceptInvite(SessionsUsers.BaseHandler):
-    def post(self, event):
+class EditEvents(SessionsUsers.BaseHandler):
+    def post(self, unique_id=None, name=None, description=None, location=None):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        event = DatabaseStructures.Event.get_by_id(int(unique_id))
+        event.event_name = name
+        event.event_location = location
+        event.event_description = description
+        event.put()
+
+
+
+
+class AcceptInvite(SessionsUsers.BaseHandler):
+    def post(self, unique_id=None):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        event = DatabaseStructures.Event.get_by_id(int(unique_id))
         for invitee in event.attendees:
             if invitee.username == user.unique_user_name and invitee.pending ==True:
                 invitee.pending = False
                 invitee.accepted = True
+        event.put()
         self.redirect('/profile?')
 
 class RejectInvite(SessionsUsers.BaseHandler):
@@ -198,6 +217,7 @@ class RejectInvite(SessionsUsers.BaseHandler):
             if invitee.username == user.unique_user_name and invitee.pending ==True:
                 invitee.pending = False
                 invitee.accepted = False
+        event.put()
         self.redirect('/profile?')
 
 
@@ -682,4 +702,8 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/accept/', handler=AcceptFriend, name='accept-friend'),
     webapp2.Route(r'/accept/<profile_id>', handler=AcceptFriend2, name='accept-friend'),
     webapp2.Route(r'/test', handler=TestPage, name='test'),
+    webapp2.Route(r'/acceptinvite', handler=AcceptInvite, name='acceptinvite'),
+    webapp2.Route(r'/acceptinvite/<unique_id>', handler=AcceptInvite, name='acceptinvite'),
+    webapp2.Route(r'/rejectinvite', handler=RejectInvite, name='rejectinvite'),
+    webapp2.Route(r'/edit/<unique_id>&<name>&<description>&<location>', handler=EditEvents, name='edit'),
 ], debug=True, config=webapp2_config)
