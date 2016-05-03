@@ -114,13 +114,15 @@ class LoginHandler(BaseHandler):
         # Raises InvalidPasswordError if provided password doesn't match with specified user
         try:
             self.auth.get_user_by_password(username, password, save_session=True)
-            self.redirect('/secure')
+            logging.error('&&&&&&&&&&&&&')
+            self.redirect(self.uri_for('profile-self'))
+            # self.redirect('/secure')
         except (InvalidAuthIdError, InvalidPasswordError), e:
             # Returns error message to self.response.write in the BaseHandler.dispatcher
             # Currently no message is attached to the exceptions
             logging.error(e)
             return e
-        self.redirect('/?')
+        # self.redirect('/?')
 
 
 class CreateUserHandler(BaseHandler):
@@ -206,7 +208,8 @@ class LogoutHandler(BaseHandler):
         self.auth.unset_session()
         # User is logged out, let's try redirecting to login page
         try:
-            self.redirect(self.auth_config['login_url'])
+            self.redirect(self.uri_for('main'))
+            # self.redirect(self.auth_config['login_url'])
         except (AttributeError, KeyError), e:
             return "User is logged out"
 

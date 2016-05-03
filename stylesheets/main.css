@@ -1,6 +1,6 @@
 body {
   font-family: Verdana, Helvetica, sans-serif;
-  background-color: #DDDDDD;
+  /*background-color: #DDDDDD;*/
 }
 
 /*
@@ -178,9 +178,9 @@ h6, .h6 {
         background-color: #8ac7d8;
     }
 
-    body {
+    /*body {
         background: #3CC;
-    }
+    }*/
 
     .container {
         display: -webkit-flex;
