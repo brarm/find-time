@@ -343,7 +343,6 @@ class RemoveFriend2(SessionsUsers.BaseHandler):
             logging.error("User not found in the database: " + user.unique_user_name)
         self.redirect('/profile?')
 
-
 class SearchResults(SessionsUsers.BaseHandler):
     def get(self):
         user_key = self.auth.get_user_by_session(save_session=True)
@@ -438,8 +437,6 @@ class RecurringEvents(SessionsUsers.BaseHandler):
             for key in getattr(cal, day):
                 recurring_events.append(key.get())
 
-        template_values = {'ids': recurring_events, 'first': self.session.get('first')}
-
         for ev in recurring_events:
             if ev:
                 day = encode_day(ev.recurring_day)
@@ -447,7 +444,7 @@ class RecurringEvents(SessionsUsers.BaseHandler):
                 for b in block_nums:
                     blocks.append(day + str(b))
 
-        template_values = {"ids": blocks}
+        template_values = {"ids": blocks, 'first': self.session.get('first')}
         template = JINJA_ENVIRONMENT.get_template('recurring.html')
         self.response.write(template.render(template_values))
 

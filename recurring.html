@@ -3,28 +3,44 @@
 
 	<head>
 		<title>Recurring Calendar</title>
+		<meta charset="utf-8">
+	  	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	  	<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" type="text/css" href="/stylesheets/css/clickable-grid.css">
 		<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 	  	<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 	  	<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+	  	<!-- <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" /> -->
+	  	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	  	<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	  	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script> -->
+	  	<link type="text/css" rel="stylesheet" href="/stylesheets/css/profile.css" />
 
 	  	<style>
 		  	#feedback { font-size: 1.4em; }
-
+		  	th {
+		  		padding-right: 10px;
+		  		text-align: right;
+		  		font-size: small;	  		
+		  	}
 		  	/*#selectable td { margin: 0px; padding: 1px; float: left; width: 40px; height: 10px; font-size: 4em; text-align: center; }*/
+		  	.grid td { height: 15px }
 		  	.tdItem.ui-selecting { background: #FECA40; }
 		  	.tdItem.ui-selected { background: #F39814; color: black; }
 		  	/*#selectable { list-style-type: none; margin: 0; padding: 0; width:
 		  	 450px; }*/
 		  	 .th { font-size: 1.2em; }
 	  	</style>
+
 	  	<script>
 	  	$(function() {
-	  	  $( "#selectable" ).selectable();
+	  	  	$( "#selectable" ).selectable();
 	  	});
 	  	</script>
+	  	
 	</head>
 	<body>
+	
 
 	<!-- Fixed navbar -->
 	    <div>
@@ -35,7 +51,7 @@
 	        </div>
 	        <div id="navbar" class="navbar-collapse collapse">
 	          <ul class="nav navbar-nav">
-	            <li><a href="#">Home</a></li>
+	            <li><a href="/profile">Profile</a></li>
 	            <li><a href="/logout">Logout</a></li>
 	            <!-- <li><a href="#contact">Contact</a></li> -->
 	            <li>
@@ -71,6 +87,18 @@
 	</div>
 
 	<script>
+	function parseIds(list) {
+		var dict = {};
+		for(var x = 0; x < list.length; x++) {
+			var id = list[x];
+			var num = id.slice(0,1);
+			var time = parseInt(id.slice(1));
+			if(dict[num]) dict[num][time] = true;
+			else dict[num] = {time:true}
+		}
+		return dict;
+	}
+
 		var x = document.getElementsByClassName('panel')[0];
 		var grid = document.createElement('table');
 		grid.className = 'grid';
@@ -78,6 +106,10 @@
     	var day_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
     	var col_headers = ['Time','M','T','W','Th','F','Sa','Su'];
     	var hour = 12;
+
+    	var prev = {{ ids|safe }}
+    	var dict = parseIds(prev)
+    	console.log(dict)
 
     	for(var x=0; x<49; x++) {
     		var tr = grid.appendChild(document.createElement('tr'));
@@ -97,15 +129,20 @@
     						if(x % 2 != 0) {
     							string += hour+ ':00';
     							hour = (hour+1) % 12;
-    							console.log(hour);
     							if(hour == 0) hour = 12;
     						}
     						return string ;
     					})
     				}
+
     				var cell = tr.appendChild(document.createElement('td'));
     				cell.className = 'tdItem';
     				$(cell).prop("id", day_letters[y] + x);
+
+    				// set color or not
+    				if( dict[day_letters[y]]) {
+    					if(dict[day_letters[y]][x]) $(cell).css('background-color','rgb(0, 0, 255)');
+    				}
     			}
     		}
     	}    
@@ -150,9 +187,5 @@
 		<input type="hidden" name="id" value=String>
 		<div><input type="submit" value="Submit weekly schedule" onclick="return retrieveAllIDs(this.form);"></div>
 	</form>
-
-	{{ids}}
-	is this working
-
 	</body>
 </html>
