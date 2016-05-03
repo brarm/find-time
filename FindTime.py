@@ -59,9 +59,10 @@ class Calendar:
     """The Calendar class is generated dynamically based on events in the datastore. This object will
     provide functionality to make the javascript display simpler
     """
-    daily_events = {}
+    # daily_events = {}
 
     def __init__(self, user):
+        self.daily_events = {}
         for day in DAYSOFTHEWEEK:
             self.daily_events[day] = []
         if not user.user_recurring_calendar:
@@ -97,6 +98,7 @@ class Calendar:
 
 class ProfilePage(SessionsUsers.BaseHandler):
     def get(self, profile_id=None):
+        logging.error('**************')
         current_user = get_current_user(self)
         if not profile_id:
             dest_user = current_user
@@ -145,7 +147,9 @@ class ProfilePage(SessionsUsers.BaseHandler):
                            "feed": requests_for_feed,
                            }
         logging.error('HEREEEEEE')
+
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
+
         self.response.write(template.render(template_values))
 
 class AddFriend(SessionsUsers.BaseHandler):
@@ -392,7 +396,6 @@ class RecurringEvents(SessionsUsers.BaseHandler):
             self.session['message'] = 'Recurring Calendar saved'
         
         return self.redirect(self.uri_for('profile-self'))
-
 
 class EventModifier(SessionsUsers.BaseHandler):
     def post(self):
