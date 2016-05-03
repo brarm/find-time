@@ -125,16 +125,26 @@ class ProfilePage(SessionsUsers.BaseHandler):
                 # ask stathi if accepted flag is required here******
                 if friend.username == current_user.unique_user_name:
                     if friend.pending:
-                        relation_state = 'pending'
+                        relation_state = 'cancel'
                     else:
-                        relation_state = 'friend'
-                        one_week_cal = Calendar(dest_user)
+                        if friend.accepted:
+                            relation_state = 'friend'
+                            one_week_cal = Calendar(dest_user)
+                        else:
+                            relation_state = 'accept/cancel'
+
+        requests_for_feed = []
+        if relation_state is 'same_user':
+            for friend in current_user.friends:
+                if friend.pending:
+                    requests_for_feed.append(friend)
 
         template_values = {"calendar": one_week_cal,
                            "user_name": dest_user.unique_user_name,
                            "display_name": dest_user.display_name,
                            "friends": friends_list,
-                           "relation": relation_state
+                           "relation": relation_state,
+                           "feed": requests_for_feed,
                            }
         logging.error('HEREEEEEE')
 
@@ -174,7 +184,7 @@ class AcceptFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
-        user2 = self.request.get('user1')
+        user2 = self.request.get('user')
         try:
             u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
             user_obj = u2[0]
@@ -200,7 +210,7 @@ class RemoveFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
-        user2 = self.request.get('user2')
+        user2 = self.request.get('user')
         try:
             u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
             user_obj = u2[0]
@@ -326,9 +336,14 @@ class RecurringEvents(SessionsUsers.BaseHandler):
         logging.error("^^^^^^^^^^^^^^")
         # blocks will have id in form
         current_user = get_current_user(self)
-
+        logging.error("*** before")
         # blocks will have id in form <letter (a-f) = day of week><number (1-48) = 30 min block>
         event_ids = self.request.get_all('id')
+        e = self.request.get('id')
+        logging.error("*** after: " + str(event_ids))
+        logging.error("*** next: " + str(type(e)))
+        logging.error(str(e))
+        logging.error(self.request.POST)
         day_groups = {}
         # block_groups = {}
 
@@ -360,12 +375,14 @@ class RecurringEvents(SessionsUsers.BaseHandler):
                 prev_block = block
 
             for start, end in block_groups:
+                numBlocks = end - start + 1
                 start_time = decode_block(start)
                 end_time = decode_block(end) + datetime.timedelta(minutes=29, seconds=59)
                 event = DatabaseStructures.Event(owner=current_user.unique_user_name,
                                                  beginning_time=start_time,
                                                  ending_time=end_time,
-                                                 recurring=True)
+                                                 recurring=True,
+                                                 num_blocks=numBlocks)
                 event_key = event.put()
                 # ALERT. THIS MAY NOT WORK
                 getattr(current_user.user_nonrecurring_calendar, key).append(event_key)
@@ -446,6 +463,11 @@ class EventHandler(SessionsUsers.BaseHandler):
         end_min = int(self.request.get("end_time_min"))
         end_time = datetime.time(end_hr, end_min)
         event.ending_time = end_time
+        num_hr = start_hr - end_hr
+        num_min = start_min - end_min
+        num_blocks = num_hr * 2 + num_min / 30
+        event.num_blocks = num_blocks
+
 
         event_key = event.put()
 
@@ -459,10 +481,11 @@ class EventHandler(SessionsUsers.BaseHandler):
                                                  timestamp=datetime.datetime.now(),
                                                  )
             event.attendees.append(invitee)
-            u = DatabaseStructures.MUser.get_by_id(inv)
-
-            if not current_user.user_nonrecurring_calendar:
+            u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == inv).fetch(1)
+            u = u2[0]
+            if not u.user_nonrecurring_calendar:
                 u.user_nonrecurring_calendar = DatabaseStructures.TemporaryCalendar()
+
             u.user_nonrecurring_calendar.events.append(event_key)
             u.put()
 
