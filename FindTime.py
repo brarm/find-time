@@ -83,9 +83,7 @@ class Calendar:
         for event_key in nonrecurring.events:
             event = event_key.get()
             day = event.day
-            logging.error(day)
             day_index = day.weekday()
-            logging.error(day_index)
             day = DAYSOFTHEWEEK[day_index]
             self.daily_events[day].append(event)
         for key in self.daily_events:
@@ -104,9 +102,6 @@ class ProfilePage(SessionsUsers.BaseHandler):
             dest_user = current_user
         else:
             dest_user = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == profile_id).fetch(1)[0]
-        # dest_user = DatabaseStructures.MUser.get_by_id(profile_id)
-        logging.error(dest_user.unique_user_name)
-
         relation_state = None
         one_week_cal = None
         # friends_list = dest_user.friends
@@ -162,11 +157,11 @@ class ProfilePage(SessionsUsers.BaseHandler):
                            "feed": feed,
                            "friend_behavior": friend_behavior
                            }
-        logging.error('HEREEEEEE')
 
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
 
         self.response.write(template.render(template_values))
+
 
 class AddFriend(SessionsUsers.BaseHandler):
     def post(self):
@@ -194,6 +189,7 @@ class AddFriend(SessionsUsers.BaseHandler):
             logging.error(str(e))
             logging.error("User not found in the database: " + user.unique_user_name)
         self.redirect('/profile?')
+
 
 #Matt's Friend Handler - handles add friend from their profile page
 class AddFriend2(SessionsUsers.BaseHandler):
@@ -389,13 +385,14 @@ def encode_day(day):
 def decode_block(b):
     b -= 1
     hr = (b / 2) % 24
-    minute = 0 if b % 2 is 0 else 30
-    return datetime.time(hr, minute)
+    m = 0 if b % 2 is 0 else 30
+    return datetime.datetime(100, 1, 1, hour=hr, minute=m)
+    # return datetime.time(hr, minute)
 
 
 # returns the blocks between a given start time and end time
 def encode_blocks(start, end):
-    end -= datetime.timedelta(minutes=29, seconds=59)
+    end = (datetime.datetime(100, 1, 1, end.hour, end.minute) - datetime.timedelta(minutes=29, seconds=59)).time()
     hour = start.hour
     minute = start.minute
     start_block = hour * 2 + (0 if minute is 0 else 1)
@@ -410,6 +407,8 @@ def encode_blocks(start, end):
 class RecurringEvents(SessionsUsers.BaseHandler):
     def get(self):
         current_user = get_current_user(self)
+        if not current_user.user_recurring_calendar:
+            current_user.user_recurring_calendar = DatabaseStructures.WeeklyRecurringSchedule()
         cal = current_user.user_recurring_calendar
         recurring_events = []
         blocks = []
@@ -417,30 +416,35 @@ class RecurringEvents(SessionsUsers.BaseHandler):
             for key in getattr(cal, day):
                 recurring_events.append(key.get())
 
-        template_values = { 'ids': recurring_events, 'first' : self.session.get('first') }
+        template_values = {'ids': recurring_events, 'first': self.session.get('first')}
 
         for ev in recurring_events:
-            day = encode_day(ev.day)
-            block_nums = encode_blocks(ev.beginning_time, ev.ending_time)
-            for b in block_nums:
-                blocks.append(day + str(b))
+            if ev:
+                day = encode_day(ev.recurring_day)
+                block_nums = encode_blocks(ev.beginning_time, ev.ending_time)
+                for b in block_nums:
+                    blocks.append(day + str(b))
 
-        template_values = {"id": blocks}
+        template_values = {"ids": blocks}
         template = JINJA_ENVIRONMENT.get_template('recurring.html')
         self.response.write(template.render(template_values))
 
     def post(self):
-        logging.error("^^^^^^^^^^^^^^")
         # blocks will have id in form
         current_user = get_current_user(self)
-        logging.error("*** before")
+        if not current_user.user_recurring_calendar:
+            current_user.user_recurring_calendar = DatabaseStructures.WeeklyRecurringSchedule()
+        logging.error("before: " + str(current_user.user_recurring_calendar))
+        for day in DAYSOFTHEWEEK:
+            del getattr(current_user.user_recurring_calendar, day)[:]
+        logging.error("after: " + str(current_user.user_recurring_calendar))
         # blocks will have id in form <letter (a-f) = day of week><number (1-48) = 30 min block>
-        event_ids = self.request.get_all('id')
+        event_ids = []
         e = self.request.get('id')
-        logging.error("*** after: " + str(event_ids))
-        logging.error("*** next: " + str(type(e)))
-        logging.error(str(e))
-        logging.error(self.request.POST)
+        event_strings = str(e).split('&')
+        for ev in event_strings:
+            unused, event_string = ev.split('=')
+            event_ids.append(event_string)
         day_groups = {}
         # block_groups = {}
 
@@ -465,27 +469,25 @@ class RecurringEvents(SessionsUsers.BaseHandler):
             for block in block_nums:
                 if not start_block:
                     start_block = block
-                    prev_block = block
-                if block is not prev_block + 1:
+                elif block is not prev_block + 1:
                     block_groups.append((start_block, prev_block))
                     start_block = block
+                elif block is block_nums[-1]:
+                    block_groups.append((start_block, block))
                 prev_block = block
-
             for start, end in block_groups:
-                numBlocks = end - start + 1
-                start_time = decode_block(start)
-                end_time = decode_block(end) + datetime.timedelta(minutes=29, seconds=59)
+                numblocks = end - start + 1
+                start_time = decode_block(start).time()
+                end_time = (decode_block(end) + datetime.timedelta(minutes=29, seconds=59)).time()
                 event = DatabaseStructures.Event(owner=current_user.unique_user_name,
                                                  beginning_time=start_time,
                                                  ending_time=end_time,
                                                  recurring=True,
-                                                 num_blocks=numBlocks)
+                                                 num_blocks=numblocks,
+                                                 recurring_day=key)
                 event_key = event.put()
-                # ALERT. THIS MAY NOT WORK
-                getattr(current_user.user_nonrecurring_calendar, key).append(event_key)
-                # try this one instead if it doesn't work
-                # current_user.user_nonrecurring_calendar[key].append(event_key)
-
+                getattr(current_user.user_recurring_calendar, key).append(event_key)
+        current_user.put()
         if self.session.get('first'):
             self.session['first'] = False
             self.session['message'] = 'Congratulations! You\'ve completed the signup'
