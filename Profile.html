@@ -619,12 +619,12 @@
           {% for name in feed %}
                 {% if name[1]%}
                     Friend Request From: {{name[0].username}}
+                    <a href="/profile/{{name[0].username}}">{{name[0].username}}</a><br> sent you a friend request
                     Time: {{name[2]}}
                 {% else %}
                     Invitee Request From: {{name[0].owner}}
-                      <form action="/acceptinvite" method ="post">
-                          <input type="hidden" name="event_key" value= {{name[0]}} >
-                          <div><input type="submit" value="Accept Event" name="user"></div>
+                      <form action="/acceptinvite/{{name[0].key.id()}}" method ="post">
+                            <div><input type="submit" value="Add Invitee"></div>
                       </form>
                     Time: {{name[2]}}
 
