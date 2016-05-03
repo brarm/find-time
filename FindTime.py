@@ -163,6 +163,28 @@ class ProfilePage(SessionsUsers.BaseHandler):
         self.response.write(template.render(template_values))
 
 
+class AcceptInvite(SessionsUsers.BaseHandler):
+    def post(self, event):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        for invitee in event.attendees:
+            if invitee.username == user.unique_user_name and invitee.pending ==True:
+                invitee.pending = False
+                invitee.accepted = True
+        self.redirect('/profile?')
+
+class RejectInvite(SessionsUsers.BaseHandler):
+    def post(self, event):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        for invitee in event.attendees:
+            if invitee.username == user.unique_user_name and invitee.pending ==True:
+                invitee.pending = False
+                invitee.accepted = False
+        self.redirect('/profile?')
+
+
+
 class AddFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
