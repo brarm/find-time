@@ -7,90 +7,95 @@
 {% autoescape true %}
 <body>
     User: {{user_name}} <br>
-    Monday events: <br>
-    {% for event in calendar.daily_events['monday'] %}
-        Event #{{loop.index}}
-        Name: {{event.event_name}} <br>
-        Description: {{event.event_description}} <br>
-        Location: {{event.event_location}} <br>
-        Beginning time: {{event.beginning_time}} <br>
-        Ending time: {{event.ending_time}} <br>
-        <br><br>
-    {% endfor %}
-    <br>
+    {% if calendar %}
+        Monday events: <br>
+        {% for event in calendar.daily_events['monday'] %}
+            Event #{{loop.index}}
+            Name: {{event.event_name}} <br>
+            Description: {{event.event_description}} <br>
+            Location: {{event.event_location}} <br>
+            Beginning time: {{event.beginning_time}} <br>
+            Ending time: {{event.ending_time}} <br>
+            <br><br>
+        {% endfor %}
+        <br>
 
-    Tuesday events: <br>
-    {% for event in calendar.daily_events['tuesday'] %}
-        Event #{{loop.index}}
-        Name: {{event.event_name}} <br>
-        Description: {{event.event_description}} <br>
-        Location: {{event.event_location}} <br>
-        Beginning time: {{event.beginning_time}} <br>
-        Ending time: {{event.ending_time}} <br>
-        <br><br>
-    {% endfor %}
-    <br>
+        Tuesday events: <br>
+        {% for event in calendar.daily_events['tuesday'] %}
+            Event #{{loop.index}}
+            Name: {{event.event_name}} <br>
+            Description: {{event.event_description}} <br>
+            Location: {{event.event_location}} <br>
+            Beginning time: {{event.beginning_time}} <br>
+            Ending time: {{event.ending_time}} <br>
+            <br><br>
+        {% endfor %}
+        <br>
 
-    Wednesday events: <br>
-    {% for event in calendar.daily_events['wednesday'] %}
-        Event #{{loop.index}}
-        Name: {{event.event_name}} <br>
-        Description: {{event.event_description}} <br>
-        Location: {{event.event_location}} <br>
-        Beginning time: {{event.beginning_time}} <br>
-        Ending time: {{event.ending_time}} <br>
-        <br><br>
-    {% endfor %}
-    <br>
+        Wednesday events: <br>
+        {% for event in calendar.daily_events['wednesday'] %}
+            Event #{{loop.index}}
+            Name: {{event.event_name}} <br>
+            Description: {{event.event_description}} <br>
+            Location: {{event.event_location}} <br>
+            Beginning time: {{event.beginning_time}} <br>
+            Ending time: {{event.ending_time}} <br>
+            <br><br>
+        {% endfor %}
+        <br>
 
-    Thursday events: <br>
-    {% for event in calendar.daily_events['thursday'] %}
-        Event #{{loop.index}}
-        Name: {{event.event_name}} <br>
-        Description: {{event.event_description}} <br>
-        Location: {{event.event_location}} <br>
-        Beginning time: {{event.beginning_time}} <br>
-        Ending time: {{event.ending_time}} <br>
-        <br><br>
-    {% endfor %}
-    <br>
+        Thursday events: <br>
+        {% for event in calendar.daily_events['thursday'] %}
+            Event #{{loop.index}}
+            Name: {{event.event_name}} <br>
+            Description: {{event.event_description}} <br>
+            Location: {{event.event_location}} <br>
+            Beginning time: {{event.beginning_time}} <br>
+            Ending time: {{event.ending_time}} <br>
+            <br><br>
+        {% endfor %}
+        <br>
 
-    Friday events: <br>
-    {% for event in calendar.daily_events['friday'] %}
-        Event #{{loop.index}}
-        Name: {{event.event_name}} <br>
-        Description: {{event.event_description}} <br>
-        Location: {{event.event_location}} <br>
-        Beginning time: {{event.beginning_time}} <br>
-        Ending time: {{event.ending_time}} <br>
-        <br><br>
-    {% endfor %}
-    <br>
+        Friday events: <br>
+        {% for event in calendar.daily_events['friday'] %}
+            Event #{{loop.index}}
+            Name: {{event.event_name}} <br>
+            Description: {{event.event_description}} <br>
+            Location: {{event.event_location}} <br>
+            Beginning time: {{event.beginning_time}} <br>
+            Ending time: {{event.ending_time}} <br>
+            <br><br>
+        {% endfor %}
+        <br>
 
-    Saturday events: <br>
-    {% for event in calendar.daily_events['saturday'] %}
-        Event #{{loop.index}}
-        Name: {{event.event_name}} <br>
-        Description: {{event.event_description}} <br>
-        Location: {{event.event_location}} <br>
-        Beginning time: {{event.beginning_time}} <br>
-        Ending time: {{event.ending_time}} <br>
-        <br><br>
-    {% endfor %}
-    <br>
+        Saturday events: <br>
+        {% for event in calendar.daily_events['saturday'] %}
+            Event #{{loop.index}}
+            Name: {{event.event_name}} <br>
+            Description: {{event.event_description}} <br>
+            Location: {{event.event_location}} <br>
+            Beginning time: {{event.beginning_time}} <br>
+            Ending time: {{event.ending_time}} <br>
+            <br><br>
+        {% endfor %}
+        <br>
 
-    Sunday events: <br>
-    {% for event in calendar.daily_events['sunday'] %}
-        Event #{{loop.index}}
-        Name: {{event.event_name}} <br>
-        Description: {{event.event_description}} <br>
-        Location: {{event.event_location}} <br>
-        Beginning time: {{event.beginning_time}} <br>
-        Ending time: {{event.ending_time}} <br>
-        <br><br>
-    {% endfor %}
-    <br>
+        Sunday events: <br>
+        {% for event in calendar.daily_events['sunday'] %}
+            Event #{{loop.index}}
+            Name: {{event.event_name}} <br>
+            Description: {{event.event_description}} <br>
+            Location: {{event.event_location}} <br>
+            Beginning time: {{event.beginning_time}} <br>
+            Ending time: {{event.ending_time}} <br>
+            <br><br>
+        {% endfor %}
+        <br>
+    {% endif %}
 
+    user name: {{user_name}} <br>
+    display name: {{display_name}} <br>
+    relation: {{relation}} <br>
 
     <a href="/">home page</a><br>
 </body>

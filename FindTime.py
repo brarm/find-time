@@ -96,9 +96,14 @@ class Calendar:
 
 
 class ProfilePage(SessionsUsers.BaseHandler):
-    def get(self, profile_id):
+    def get(self, profile_id=None):
         current_user = get_current_user(self)
-        dest_user = DatabaseStructures.MUser.get_by_id(profile_id)
+        if not profile_id:
+            dest_user = current_user
+        else:
+            dest_user = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == profile_id).fetch(1)[0]
+        # dest_user = DatabaseStructures.MUser.get_by_id(profile_id)
+        logging.error(dest_user.unique_user_name)
 
         relation_state = None
         one_week_cal = None
@@ -239,6 +244,11 @@ class SearchResults(SessionsUsers.BaseHandler):
             for possible_match in list_of_all_users:
                 if search in possible_match.unique_user_name:
                     search_results.append(possible_match)
+
+        newlist = []
+        for res in search_results:
+            newlist.append((res, '/profile/' + res.unique_user_name))
+        search_results = newlist
 
         template_values = {"calendar": one_week_cal,
                            "user_name": user.unique_user_name,
@@ -492,7 +502,8 @@ webapp2_config = {'webapp2_extras.sessions': {'secret_key': 'secret_key_123', },
 
 app = webapp2.WSGIApplication([
     webapp2.Route(r'/', handler=MainPage, name="main"),
-    webapp2.Route(r'/profile', handler=ProfilePage, name="profile"),
+    webapp2.Route(r'/profile', handler=ProfilePage, name="profile-self"),
+    webapp2.Route(r'/profile/<profile_id>', handler=ProfilePage, name="profile"),
     webapp2.Route(r'/event/create', handler=EventHandler, name="create-event"),
     webapp2.Route(r'/<event>/modify', handler=EventHandler, name="event"),
     webapp2.Route(r'/login', handler=SessionsUsers.LoginHandler, name='login'),
