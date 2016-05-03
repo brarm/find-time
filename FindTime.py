@@ -103,10 +103,15 @@ class Calendar:
                 block_range = encode_blocks(start, end)
                 for b in block_range:
                     blocks[b] = (ev.key, ev.recurring)
-            logging.error("****" + str(blocks))
             self.event_blocks[day] = blocks
 
-
+        self.time_decoding = {}
+        midnight = datetime.datetime(100, 1, 1, 12, 0)
+        for i in range(0, 48):
+            if midnight.hour is 13:
+                midnight = datetime.datetime(100, 1, 1, 1, 0)
+            self.time_decoding[i] = str(midnight.time())
+            midnight += datetime.timedelta(minutes=30)
 
     # more functionality to be added to this class based on javascript requirements
 
