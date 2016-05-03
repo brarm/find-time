@@ -2,3 +2,30 @@ body {
   min-height: 2000px;
   padding-top: 70px;
 }
+#calendargoeshere {
+	background-color:blue;
+	width:1000px;
+	margin-left: auto;
+	margin-right: auto;
+	height:500px;
+}
+#subcalendarcontainer {
+	background-color:green;
+	width:1000px;
+	margin-left: auto;
+	margin-right: auto;
+	height:250px;
+	text-align: center;
+}
+#detailsgohere{
+	background-color:red;
+	width:475px;
+	height:240px;
+	display: inline-block;
+}
+#feedgoeshere{
+	background-color:orange;
+	width:475px;
+	height:240px;
+	display: inline-block;
+}

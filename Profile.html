@@ -100,10 +100,20 @@
     })
     </script>
 
+    <!--
+    <div id="calendargoeshere"></div>
+    <div id="subcalendarcontainer">
+        <div id="detailsgohere"></div>
+        <div id="feedgoeshere"></div>
+    </div>-->
+    
+
+    <!--
     <div>
 
+    
     <div class="jumbotron">
-      <div class="container" id="calendar-container">
+      <div class="container" id="calendar-container">-->
       <!-- generate calendar -->
       <!--   <script>
 
@@ -524,7 +534,7 @@
       </table> -->
 
 
-
+<!--
         <h1>Hello, world!</h1>
         User: {{user_name}} <br>
         {% if calendar %}
@@ -619,6 +629,50 @@
       </div>
     </div>
     </div>
+-->
+
+
+    <!--
+    <table>
+      <tr>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+      </tr>
+      <tr>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+      </tr>
+      <tr>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+      </tr>
+    </table>-->
+
+    <table>
+    {% for i in range (0,48) %}
+      <tr>
+        {% for j in range (0,7) %}
+            <td>{{i}}</td>
+        {%endfor%}
+      </tr>
+    {%endfor%}
+    </table>
+
 
 
     {% if relation == 'stranger' %}
