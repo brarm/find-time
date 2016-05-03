@@ -616,6 +616,17 @@
         user name: {{user_name}} <br>
         display name: {{display_name}} <br>
         relation: {{relation}} <br>
+          {% for name in feed %}
+                {% if name[1]%}
+                    Friend Request From:
+                    Time: {{name[2]}}
+                    <br><br>
+                {% else %}
+                    Invitee Request From: {{name[0].owner}}
+                    Time: {{name[2]}}
+                    <br><br>
+                {% endif %}
+          {% endfor %}
       </div>
     </div>
     </div>

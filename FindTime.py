@@ -135,18 +135,26 @@ class ProfilePage(SessionsUsers.BaseHandler):
                             relation_state = 'accept/cancel'
                             friend_behavior = ("/accept/" + dest_user.unique_user_name, "/remove" + dest_user.unique_user_name)
 
-        requests_for_feed = []
+        feed = []
         if relation_state is 'same_user':
             for friend in current_user.friends:
                 if friend.pending:
-                    requests_for_feed.append(friend)
+                    friendTup = (friend, True, friend.timestamp)
+                    feed.append(friendTup)
+            for event_key in current_user.user_nonrecurring_calendar.events:
+                event = event_key.get()
+                for invitee in event.attendees:
+                    if (invitee.username == current_user.unique_user_name) and (invitee.pending == True):
+                        eventTup = (event, False, invitee.timestamp)
+                        feed.append(eventTup)
+        feed.sort(key=lambda x: x[2])
 
         template_values = {"calendar": one_week_cal,
                            "user_name": dest_user.unique_user_name,
                            "display_name": dest_user.display_name,
                            "friends": friends_list,
                            "relation": relation_state,
-                           "feed": requests_for_feed,
+                           "feed": feed,
                            "friend_behavior": friend_behavior
                            }
 
