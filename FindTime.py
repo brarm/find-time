@@ -131,11 +131,18 @@ class ProfilePage(SessionsUsers.BaseHandler):
                         else:
                             relation_state = 'accept/cancel'
 
+        requests_for_feed = []
+        if relation_state is 'same_user':
+            for friend in current_user.friends:
+                if friend.pending:
+                    requests_for_feed.append(friend)
+
         template_values = {"calendar": one_week_cal,
                            "user_name": dest_user.unique_user_name,
                            "display_name": dest_user.display_name,
                            "friends": friends_list,
-                           "relation": relation_state
+                           "relation": relation_state,
+                           "feed": requests_for_feed,
                            }
         logging.error('HEREEEEEE')
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
