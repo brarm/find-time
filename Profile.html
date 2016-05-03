@@ -676,14 +676,31 @@
     </table>-->
 
     <table>
-    {% for i in range (0,48) %}
       <tr>
-        {% for j in range (0,7) %}
-            <td>{{i}}</td>
+        <th>Time</th>
+        {%for ColumnHeader in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']%}
+        <th>{{ColumnHeader}}</th>
+        {% endfor%}
+      </tr>
+    {% for i in range(0,48) %}
+      <tr>
+        {% for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']%}
+          {%if day == 'monday'%}
+          <td>{{i}}</td>
+          {%endif%}
+          {% if calendar.event_blocks[day][i][0] != None and calendar.event_blocks[day][i][1] == False %}
+            <td class="event">{{calendar.event_blocks[day][i]}}
+              <a href="/profile">event</a>
+            </td>
+          {%else%}
+            <td class="nonevent">none or recurring</td>
+          {%endif%}
         {%endfor%}
       </tr>
     {%endfor%}
     </table>
+
+    <p>hello</p>
 
 
 
