@@ -87,10 +87,6 @@
 
 	<script>
 	$(document).ready(function(){
-		$(document).ajaxSuccess(function() {
-  		window.location="/"
-	});
-
 		$("table").selectable({
 			filter: ".tdItem",
 			stop: function( event, ui ) {
@@ -111,23 +107,27 @@
 
 	<button class="populate">Submit weekly schedule</button>
 	<script>
-	
 
 	$(".populate").click(function() {
 		schedule = $('.tdItem').filter(function() {
 			return ($(this).css('background-color') == 'rgb(0, 0, 255)')
 		});
-		var ids = [];
+
+		var ids = {};
+		ids['ev'] = []
 		$.each(schedule, function(index, value) {
-			ids.push($(value).attr('id'));
+			ids['ev'].push($(value).attr('id'));
 		});
-		var url = '/recurring';
-		// async server call
-		$.ajax({
-			url: url,
-			data: {ids},
-			type: 'POST'
-		});
+		console.log($.param(ids));
+		console.log('/recurring' + $.param(ids))
+		$('form').attr('action','/recurring' + $.param(ids))
+		// var url = '/recurring';
+		// // async server call
+		// $.ajax({
+		// 	url: url,
+		// 	data: {ids},
+		// 	type: 'POST'
+		// });
 	});
 	</script>
 	
