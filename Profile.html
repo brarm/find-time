@@ -81,6 +81,8 @@
     {%endif%}
 
     <h3>4. Panel embedding <a href="http://getbootstrap.com/css/#tables" target="_blank">Table</a></h3>
+    <div class="container-fluid">
+
 
     <!--panel-->
     <div class="panel panel-primary">
@@ -91,44 +93,41 @@
             <table class="table table-condensed">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Username</th>
+                        <th>Name</th>
+                        <th>Accept!</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Mark</td>
-                        <td>Otto</td>
-                        <td>@mdo</td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>Jacob</td>
-                        <td>Thornton</td>
-                        <td>@fat</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td colspan="2">Larry the Bird</td>
-                        <td>@twitter</td>
-                    </tr>
+                {% for name in feed %}
+             <tr>
+             {% if name[1]%}
+                 <td><a href="/profile/{{name[0].username}}">{{name[0].username}}</a></td>
+                 <td>Time: {{name[2]}}</td>
+              {% else %}
+                 Invitee Request From: {{name[0].owner}}
+                 <td>
+                   <form action="/acceptinvite/{{name[0].key.id()}}" method ="post">
+              <div><input type="submit" value="Add Invitee"></div>
+                   </form></td>
+                 <td>Time: {{name[2]}}</td>
+             {% endif %}
+                 </tr>
+       {% endfor %}
                 </tbody>
             </table>
             <!--end of table-->
         </div>
     </div>
     <!--end of panel-->
-    <br/>
+    </div>
 
 
     <!-- feeeed me -->
-    user name: {{user_name}} <br>
+ <!--    user name: {{user_name}} <br>
      display name: {{display_name}} <br>
-     relation: {{relation}}
-       <br><table style="width:100%"></table>
+     relation: {{relation}} -->
+       <br>
+       <table style="width:100%">
        {% for name in feed %}
              <tr>
              {% if name[1]%}
