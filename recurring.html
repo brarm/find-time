@@ -30,6 +30,10 @@
 		  	/*#selectable { list-style-type: none; margin: 0; padding: 0; width:
 		  	 450px; }*/
 		  	 .th { font-size: 1.2em; }
+		  	 form {
+		  	     width: 300px;
+		  	     margin: 0 auto;
+		  	 }
 	  	</style>
 
 	  	<script>
@@ -107,7 +111,7 @@
     	var col_headers = ['Time','M','T','W','Th','F','Sa','Su'];
     	var hour = 12;
 
-    	var prev = {{ ids|safe }};
+    	var prev = {{ids|safe}}
     	var dict = parseIds(prev);
     	console.log(dict);
 

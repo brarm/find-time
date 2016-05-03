@@ -26,6 +26,7 @@
           <ul class="nav navbar-nav">
             <li><a href="#">Home</a></li>
             <li><a href="/logout">Logout</a></li>
+            <li><a href="/event/create">Create Event</a></li>
             <li><a href="/recurring">Edit Recurring</a></li>
             <li>
               <form class="navbar-form form-inline pull-right" action="/search" method="get">
@@ -67,10 +68,6 @@
     </table>
     {%endif%}
 
-    <p>hello</p>
-
-
-
     {% if relation == 'stranger' %}
         <form action={{friend_behavior[0]}} method="post">
           <div><input type="submit" value="Add Friend" name="user"></div>
@@ -92,6 +89,4 @@
         </form>
     {% endif %}
 
-
-    <a href="/">home page</a><br>
 </body>

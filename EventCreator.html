@@ -1,12 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-      <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
-    <title> Event Creation Page</title>
-    Event Creation Page <br><br>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" /> -->
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+
+    <title>Event Creation Page</title>
+    <style>
+    body {
+      padding-top: 70px;
+    }
+    @media (min-width: 1200px) {
+        .container{
+            max-width: 970px;
+        }
+    }
+    </style>
 </head>
+
 <body>
-    <form action="/event/create" method="post">
+    <!-- Fixed navbar -->
+        <div>
+        <nav class="navbar navbar-default navbar-fixed-top">
+          <div class="container">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="#">Find Time</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+              <ul class="nav navbar-nav">
+                <li><a href="#">Home</a></li>
+                <li><a href="/logout">Logout</a></li>
+                <li><a href="/recurring">Edit Recurring</a></li>
+                <li>
+                  <form class="navbar-form form-inline pull-right" action="/search" method="get">
+                      <input type="text" class="span2" placeholder="Search">
+                      <input type="submit" value="Search" class="btn"/>
+                  </form>
+                </li>
+              </ul>
+            </div><!--/.nav-collapse -->
+          </div>
+        </nav>
+        </div>
+
+    <!-- <form action="/event/create" method="post">
         Title: <div><textarea name="title" rows="1" cols="30"></textarea></div>
         Location: <div><textarea name="location" rows="1" cols="30"></textarea></div>
         Description: <div><textarea name="description" rows="5" cols="30"></textarea></div>
@@ -74,8 +116,83 @@
             <option value="pm">pm</option>
         </select>
         <div><input type="submit" value="Create Event"></div>
+    </form> -->
+
+    <div class="container">
+    <form action="/event/create" method="post">
+      <fieldset class="form-group">
+        <label for="title">Event Title</label>
+        <input type="text" class="form-control" id="title" name="title" placeholder="Enter event title">
+        <label for="location">Event Location</label>
+        <input type="text" class="form-control" id="location" name="location" placeholder="Enter event location">
+        <label for="description">Event Description</label>
+        <input type="text" class="form-control" id="description" name="description" placeholder="Enter event description">
+      </fieldset>
+      <fieldset class="form-group">
+        <label for="start_time_hr">Start Time Hour</label>
+        <select class="form-control" id="start_time_hr" name=start_time_hr>
+            <option selected></option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+        </select>
+        <label for="start_time_hr">Start Time Minute</label>
+        <select class="form-control" id="start_time_min" name="start_time_min">
+            <option selected></option>
+            <option value="00">:00</option>
+            <option value="30">:30</option>
+        </select>
+        <label for="start_time_ampm">Start Time AM/PM</label>
+        <select class="form-control" id="start_time_ampm" name="start_time_ampm">
+            <option selected></option>
+            <option value="am">am</option>
+            <option value="pm">pm</option>
+        </select>
+
+      </fieldset>
+
+      <fieldset class="form-group">
+        <label for="end_time_hr">end Time Hour</label>
+        <select class="form-control" id="end_time_hr" name=end_time_hr>
+            <option selected></option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+        </select>
+        <label for="end_time_hr">end Time Minute</label>
+        <select class="form-control" id="end_time_min" name="end_time_min">
+            <option selected></option>
+            <option value="00">:00</option>
+            <option value="30">:30</option>
+        </select>
+        <label for="end_time_ampm">end Time AM/PM</label>
+        <select class="form-control" id="end_time_ampm" name="end_time_ampm">
+            <option selected></option>
+            <option value="am">am</option>
+            <option value="pm">pm</option>
+        </select>
+
+      </fieldset>
+      <button type="submit" class="btn btn-primary">Create Event</button>
     </form>
-    <br><br>
-    <a href="/">return to home page</a><br>
+    </div>
 </body>
 </html>

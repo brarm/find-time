@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css"
+    />
+    <!-- <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" /> -->
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/css/profile.css" />
+
+    <title> Profile Page</title>
+</head>
+<body>
+<!-- Fixed navbar -->
+    <div>
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Find Time</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="#">Home</a></li>
+            <li><a href="/logout">Logout</a></li>
+            <li><a href="/recurring">Edit Recurring</a></li>
+            <li>
+              <form class="navbar-form form-inline pull-right" action="/search" method="get">
+                  <input type="text" class="span2" placeholder="Search">
+                  <input type="submit" value="Search" class="btn"/>
+              </form>
+            </li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+    </div>
+
+    <div class="container">
+      <div class="header clearfix">
+        <nav>
+          <ul class="nav nav-pills pull-right">
+            <li role="presentation"><a href="#"></a></li>
+            <li role="presentation"><a href="#"></a></li>
+            <li role="presentation"><a href="#"></a></li>
+          </ul>
+        </nav>
+        <h3 class="text-muted"></h3>
+      </div>
+
+<div class="jumbotron">
+        <h1>{{title}}</h1>
+        <p class="lead">Description: {{description}}</p>
+        <p class="lead2">Location: {{location}}</p>
+        <p class="lead3">Date: {{day}}</p>
+        <p class="lead4">Start time: {{start_time}}</p>
+        <p class="lead5">End time: {{end_time}}</p>
+        <p class="lead6">People attending:</p> <br>
+        {% for u in attendees %}
+          {{u.username}}
+        {% endfor %}
+  <a href="/profile">Back to Home</a>
+</div>
+
+
+</body>
+</html>
