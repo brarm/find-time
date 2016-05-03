@@ -73,20 +73,20 @@ class Calendar:
 
         recurring = user.user_recurring_calendar
 
-        self.daily_events['monday'].append(recurring.monday)
-        self.daily_events['tuesday'].append(recurring.tuesday)
-        self.daily_events['wednesday'].append(recurring.wednesday)
-        self.daily_events['thursday'].append(recurring.thursday)
-        self.daily_events['friday'].append(recurring.friday)
-        self.daily_events['saturday'].append(recurring.saturday)
-        self.daily_events['sunday'].append(recurring.sunday)
+        self.daily_events['monday'].extend(recurring.monday)
+        self.daily_events['tuesday'].extend(recurring.tuesday)
+        self.daily_events['wednesday'].extend(recurring.wednesday)
+        self.daily_events['thursday'].extend(recurring.thursday)
+        self.daily_events['friday'].extend(recurring.friday)
+        self.daily_events['saturday'].extend(recurring.saturday)
+        self.daily_events['sunday'].extend(recurring.sunday)
         nonrecurring = user.user_nonrecurring_calendar
         for event_key in nonrecurring.events:
             event = event_key.get()
             day = event.day
             day_index = day.weekday()
             day = DAYSOFTHEWEEK[day_index]
-            self.daily_events[day].append(event)
+            self.daily_events[day].append(event_key)
         for key in self.daily_events:
             for ev in self.daily_events[key]:
                 if not ev:
@@ -96,13 +96,14 @@ class Calendar:
         for day in DAYSOFTHEWEEK:
             blocks = [None] * 48
 
-            for ev in self.daily_events[day]:
+            for ev_key in self.daily_events[day]:
+                ev = ev_key.get()
                 start = ev.beginning_time
                 end = ev.ending_time
                 block_range = encode_blocks(start, end)
                 for b in block_range:
                     blocks[b] = (ev.key, ev.recurring)
-
+            logging.error("****" + str(blocks))
             self.event_blocks[day] = blocks
 
 
