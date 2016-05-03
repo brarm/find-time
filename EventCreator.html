@@ -14,7 +14,7 @@
             {% if friends %}
                 {% for friend in friends %}
                     {% if friend.accepted == True %}
-                        <option value="friends">{{friend.username}}</option>
+                        <option value={{friend.username}}>{{friend.username}}</option>
                     {% endif %}
                 {%endfor%}
             {% else %}

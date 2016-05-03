@@ -180,7 +180,7 @@ class AcceptFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
-        user2 = self.request.get('user1')
+        user2 = self.request.get('user')
         try:
             u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
             user_obj = u2[0]
@@ -206,7 +206,7 @@ class RemoveFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
-        user2 = self.request.get('user2')
+        user2 = self.request.get('user')
         try:
             u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
             user_obj = u2[0]
@@ -473,10 +473,11 @@ class EventHandler(SessionsUsers.BaseHandler):
                                                  timestamp=datetime.datetime.now(),
                                                  )
             event.attendees.append(invitee)
-            u = DatabaseStructures.MUser.get_by_id(inv)
-
-            if not current_user.user_nonrecurring_calendar:
+            u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == inv).fetch(1)
+            u = u2[0]
+            if not u.user_nonrecurring_calendar:
                 u.user_nonrecurring_calendar = DatabaseStructures.TemporaryCalendar()
+
             u.user_nonrecurring_calendar.events.append(event_key)
             u.put()
 
