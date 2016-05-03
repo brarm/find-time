@@ -632,7 +632,7 @@
       <tr>
         {% for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']%}
           {%if day == 'monday'%}
-          <td>{{i}}</td>
+          <td>{{calendar.time_decoding[i]}}</td>
           {%endif%}
           {% if calendar.event_blocks[day][i][0] != None and calendar.event_blocks[day][i][1] == False %}
             <td class="event">{{calendar.event_blocks[day][i]}}
