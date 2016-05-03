@@ -41,69 +41,22 @@
 
     
 
-    <script type="text/javascript">
-      function parse_cal() {
+    
 
-      }
-    </script>
+    <!--
+    <div id="calendargoeshere"></div>
+    <div id="subcalendarcontainer">
+        <div id="detailsgohere"></div>
+        <div id="feedgoeshere"></div>
+    </div>-->
+    
 
-    <script>
-    function test_func(data) {
-      console.log(data);
-    }
-
-    $(document).ready(function(){
-      var disp = document.getElementsByClassName('container')[1];
-      var grid = document.createElement('table');
-      grid.className = 'calendar';
-      disp.appendChild(grid);
-
-      var user_cal = "{{ calendar|safe }}"
-
-      var daily_events = " {{ calendar.daily_events['friday']|safe }}"
-      console.log(user_cal)
-      console.log(daily_events)
-      console.log(session['calendar'])
-
-      console.log("fucking shit")
-      // test_func({{ calendar|safe }})
-      
-      // header row
-      var col_headers = ['Time','M','T','W','Th','F','Sa','Su'];
-
-      // <thead>
-      //     <tr>
-      //         <th>&nbsp;</th>
-      //         <th width="20%">Sunday</th>
-      //         <th width="20%">Monday</th>
-      //         <th width="20%">Tuesday</th>
-      //         <th width="20%">Wednesday</th>
-      //         <th width="20%">Thursday</th>
-      //     </tr>
-      // </thead>
-
-      var head = document.createElement('thead');
-      var row = document.createElement('tr');
-
-      $.each(col_headers, function( index, value ) {
-        var th = row.appendChild(document.createElement('th'));
-        $(th).text(value);
-      })
-
-      head.appendChild(row);
-      grid.appendChild(head);
-
-
-      
-      // $(row).prepend(head)
-      // $(grid).prepend(row);
-    })
-    </script>
-
+    <!--
     <div>
 
+    
     <div class="jumbotron">
-      <div class="container" id="calendar-container">
+      <div class="container" id="calendar-container">-->
       <!-- generate calendar -->
       <!--   <script>
 
@@ -524,7 +477,7 @@
       </table> -->
 
 
-
+<!--
         <h1>Hello, world!</h1>
         User: {{user_name}} <br>
         {% if calendar %}
@@ -618,18 +571,86 @@
         relation: {{relation}} <br>
           {% for name in feed %}
                 {% if name[1]%}
-                    Friend Request From:
+                    Friend Request From: {{name[0].username}}
+                    <a href="/profile/{{name[0].username}}">{{name[0].username}}</a><br> sent you a friend request
                     Time: {{name[2]}}
-                    <br><br>
                 {% else %}
                     Invitee Request From: {{name[0].owner}}
+                      <form action="/acceptinvite/{{name[0].key.id()}}" method ="post">
+                            <div><input type="submit" value="Add Invitee"></div>
+                      </form>
                     Time: {{name[2]}}
-                    <br><br>
+
                 {% endif %}
           {% endfor %}
+           <br><br>
       </div>
     </div>
     </div>
+-->
+
+
+    <!--
+    <table>
+      <tr>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+      </tr>
+      <tr>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+      </tr>
+      <tr>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+        <td>HI</td>
+      </tr>
+    </table>-->
+    {%if calendar != None %}
+    <table>
+      <tr>
+        <th>Time</th>
+        {%for ColumnHeader in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']%}
+        <th>{{ColumnHeader}}</th>
+        {% endfor%}
+      </tr>
+    {% for i in range(0,48) %}
+      <tr>
+        {% for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']%}
+          {%if day == 'monday'%}
+          <td>{{i}}</td>
+          {%endif%}
+          {% if calendar.event_blocks[day][i][0] != None and calendar.event_blocks[day][i][1] == False %}
+            <td class="event">{{calendar.event_blocks[day][i]}}
+              <a href="/profile">event</a>
+            </td>
+          {% elif calendar.event_blocks[day][i][1]%}
+            <td class="nonevent">recurring</td>
+          {%else%}
+            <td class="nonevent">none</td>
+          {%endif%}
+        {%endfor%}
+      </tr>
+    {%endfor%}
+    </table>
+    {%endif%}
+
+    <p>hello</p>
+
 
 
     {% if relation == 'stranger' %}

@@ -20,7 +20,6 @@
     {% endfor %}
 
     {%for result in search_results %}
-    <a href="/profile">{{result[0].unique_user_name}}</a>
     <a href= {{ result[1] }}>{{result[0].unique_user_name}}</a>
     <br>
     {% endfor %}
