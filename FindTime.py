@@ -164,9 +164,13 @@ class ProfilePage(SessionsUsers.BaseHandler):
 
 
 class AcceptInvite(SessionsUsers.BaseHandler):
-    def post(self, event):
+    def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        event_key = self.request.get('event_key')
+        logging.error(event_key)
+        eventLS = DatabaseStructures.Event.get_by_id(event_key)
+        event = eventLS[0]
         for invitee in event.attendees:
             if invitee.username == user.unique_user_name and invitee.pending ==True:
                 invitee.pending = False
@@ -668,4 +672,6 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/accept/', handler=AcceptFriend, name='accept-friend'),
     webapp2.Route(r'/accept/<profile_id>', handler=AcceptFriend2, name='accept-friend'),
     webapp2.Route(r'/test', handler=TestPage, name='test'),
+    webapp2.Route(r'/acceptinvite', handler=AcceptInvite, name='acceptinvite'),
+    webapp2.Route(r'/rejectinvite', handler=RejectInvite, name='rejectinvite'),
 ], debug=True, config=webapp2_config)
