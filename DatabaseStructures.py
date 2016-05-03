@@ -37,6 +37,7 @@ class Event(ndb.Model):
     event_location = ndb.StringProperty(indexed=False)
     event_description = ndb.TextProperty(indexed=False)
     recurring = ndb.BooleanProperty(indexed=False, default=False)
+    num_blocks = ndb.IntegerProperty(indexed=False)
 
 
 class WeeklyRecurringSchedule(ndb.Model):
