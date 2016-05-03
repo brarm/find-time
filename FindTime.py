@@ -59,9 +59,10 @@ class Calendar:
     """The Calendar class is generated dynamically based on events in the datastore. This object will
     provide functionality to make the javascript display simpler
     """
-    daily_events = {}
+    # daily_events = {}
 
     def __init__(self, user):
+        self.daily_events = {}
         for day in DAYSOFTHEWEEK:
             self.daily_events[day] = []
         if not user.user_recurring_calendar:
@@ -95,6 +96,7 @@ class Calendar:
 
 class ProfilePage(SessionsUsers.BaseHandler):
     def get(self, profile_id=None):
+        logging.error('**************')
         current_user = get_current_user(self)
         if not profile_id:
             dest_user = current_user
@@ -107,6 +109,9 @@ class ProfilePage(SessionsUsers.BaseHandler):
         #                                 .fetch()
         friends_list = dest_user.friends
 
+        #friend_behavior is an attribute used to route appropriate buttons for friend actions a user can take from anothers profile
+        friend_behavior = (None, None)
+
         # dest_user.friends.query(DatabaseStructures.Friend.username == current_user.unique_user_name).fetch()
         # if not empty, grab first element
         if current_user.unique_user_name == dest_user.unique_user_name:
@@ -114,17 +119,21 @@ class ProfilePage(SessionsUsers.BaseHandler):
             one_week_cal = Calendar(dest_user)
         else:
             relation_state = 'stranger'
+            friend_behavior = ("/add/" + dest_user.unique_user_name, friend_behavior[1])
             for friend in friends_list:
                 # ask stathi if accepted flag is required here******
                 if friend.username == current_user.unique_user_name:
                     if friend.pending:
                         relation_state = 'cancel'
+                        friend_behavior = ("/remove/" + dest_user.unique_user_name, friend_behavior[1])
                     else:
                         if friend.accepted:
                             relation_state = 'friend'
+                            friend_behavior = ("/remove/" + dest_user.unique_user_name, friend_behavior[1])
                             one_week_cal = Calendar(dest_user)
                         else:
                             relation_state = 'accept/cancel'
+                            friend_behavior = ("/accept/" + dest_user.unique_user_name, "/remove" + dest_user.unique_user_name)
 
         requests_for_feed = []
         if relation_state is 'same_user':
@@ -138,8 +147,11 @@ class ProfilePage(SessionsUsers.BaseHandler):
                            "friends": friends_list,
                            "relation": relation_state,
                            "feed": requests_for_feed,
+                           "friend_behavior": friend_behavior
                            }
+
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
+
         self.response.write(template.render(template_values))
 
 
@@ -171,6 +183,38 @@ class AddFriend(SessionsUsers.BaseHandler):
         self.redirect('/profile?')
 
 
+#Matt's Friend Handler - handles add friend from their profile page
+class AddFriend2(SessionsUsers.BaseHandler):
+    def post(self, profile_id):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        logging.error("$$$$$$$$$$$$$$$$$$$$$$" + profile_id)
+        user2 = profile_id
+        logging.error("$$$$$$$$$$$$$$$$$$$$$$" + user2)
+        friend1 = DatabaseStructures.Friend(accepted=False, pending=True, username=user.unique_user_name,
+                                            timestamp=datetime.datetime.now())
+        friend2 = DatabaseStructures.Friend(accepted=False, pending=False, username=user2,
+                                            timestamp=datetime.datetime.now())
+        try:
+            u2 = DatabaseStructures.MUser.query(user2 == DatabaseStructures.MUser.unique_user_name).fetch(1)
+            user_obj = u2[0]
+            if user.friends is None:
+                user.friends = ndb.StructuredProperty(DatabaseStructures.Friend, repeated=True)
+            if user_obj.friends is None:
+                user_obj.friends = ndb.StructuredProperty(DatabaseStructures.Friend, repeated=True)
+            user.friends.append(friend2)
+            user_obj.friends.append(friend1)
+            user.put()
+            user_obj.put()
+
+        except Exception as e:
+            logging.error(str(type(e)))
+            logging.error(str(e))
+            logging.error("User not found in the database: " + user.unique_user_name)
+        self.redirect('/profile?')
+
+
+
 class AcceptFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
@@ -197,11 +241,61 @@ class AcceptFriend(SessionsUsers.BaseHandler):
         self.redirect('/profile?')
 
 
+#Matt's Accept Friend From Profile Page Handler
+class AcceptFriend2(SessionsUsers.BaseHandler):
+    def post(self, profile_id):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        user2 = profile_id
+        try:
+            u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
+            user_obj = u2[0]
+            for friend in user.friends:
+                if friend.username == user2:
+                    friend.accepted = True
+                    friend.pending = False
+            for friend in user_obj.friends:
+                if friend.username == user.unique_user_name:
+                    friend.accepted = True
+                    friend.pending = False
+            user.put()
+            user_obj.put()
+
+        except Exception as e:
+            logging.error(str(type(e)))
+            logging.error(str(e))
+            logging.error("User not found in the database: " + user.unique_user_name)
+        self.redirect('/profile?')
+
+
 class RemoveFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
         user2 = self.request.get('user')
+        try:
+            u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
+            user_obj = u2[0]
+            for friend in user.friends:
+                if friend.username == user2:
+                    user.friends.remove(friend)
+            for friend in user_obj.friends:
+                if friend.username == user.unique_user_name:
+                    user_obj.friends.remove(friend)
+            user.put()
+            user_obj.put()
+        except Exception as e:
+            logging.error(str(type(e)))
+            logging.error(str(e))
+            logging.error("User not found in the database: " + user.unique_user_name)
+        self.redirect('/profile?')
+
+#Matt's Remove Friend From Profile Page Handler
+class RemoveFriend2(SessionsUsers.BaseHandler):
+    def post(self, profile_id):
+        user_key = self.auth.get_user_by_session(save_session=True)
+        user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
+        user2 = profile_id
         try:
             u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
             user_obj = u2[0]
@@ -394,7 +488,6 @@ class RecurringEvents(SessionsUsers.BaseHandler):
         
         return self.redirect(self.uri_for('profile-self'))
 
-
 class EventModifier(SessionsUsers.BaseHandler):
     def post(self):
         event_key = self.request.get('event_key')
@@ -539,7 +632,10 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/recurring', handler=RecurringEvents, name='recurring'),
     webapp2.Route(r'/search', handler=SearchResults, name="search"),
     webapp2.Route(r'/add/', handler=AddFriend, name='add-friend'),
+    webapp2.Route(r'/add/<profile_id>', handler=AddFriend2, name='add-friend'),
     webapp2.Route(r'/remove/', handler=RemoveFriend, name='remove-friend'),
+    webapp2.Route(r'/remove/<profile_id>', handler=RemoveFriend2, name='remove-friend'),
     webapp2.Route(r'/accept/', handler=AcceptFriend, name='accept-friend'),
+    webapp2.Route(r'/accept/<profile_id>', handler=AcceptFriend2, name='accept-friend'),
     webapp2.Route(r'/test', handler=TestPage, name='test'),
 ], debug=True, config=webapp2_config)
