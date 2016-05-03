@@ -123,10 +123,13 @@ class ProfilePage(SessionsUsers.BaseHandler):
                 # ask stathi if accepted flag is required here******
                 if friend.username == current_user.unique_user_name:
                     if friend.pending:
-                        relation_state = 'pending'
+                        relation_state = 'cancel'
                     else:
-                        relation_state = 'friend'
-                        one_week_cal = Calendar(dest_user)
+                        if friend.accepted:
+                            relation_state = 'friend'
+                            one_week_cal = Calendar(dest_user)
+                        else:
+                            relation_state = 'accept/cancel'
 
         requests_for_feed = []
         if relation_state is 'same_user':
