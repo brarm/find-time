@@ -102,7 +102,7 @@ class Calendar:
                 end = ev.ending_time
                 block_range = encode_blocks(start, end)
                 for b in block_range:
-                    blocks[b] = (ev.key, ev.recurring)
+                    blocks[b] = (ev.key, ev.recurring, ev.event_name)
             self.event_blocks[day] = blocks
 
         self.time_decoding = {}

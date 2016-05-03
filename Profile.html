@@ -39,7 +39,6 @@
     </nav>
     </div>
 
-
     {%if calendar != None %}
     <table>
       <tr>
@@ -52,16 +51,15 @@
       <tr>
         {% for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']%}
           {%if day == 'monday'%}
-          <td>{{i}}</td>
+          <td>{{calendar.time_decoding[i]}}</td>
           {%endif%}
           {% if calendar.event_blocks[day][i][0] != None and calendar.event_blocks[day][i][1] == False %}
-            <td class="event"><a href="/event/view/{{calendar.event_blocks[day][i]}}">{{calendar.event_blocks[day][i].get().event_name}}</a>
-              <a href="/profile">event</a>
+            <td class="event"><a href="/event/view/{{calendar.event_blocks[day][i][0].id()}}">{{calendar.event_blocks[day][i][2]}}</a>
             </td>
           {% elif calendar.event_blocks[day][i][1]%}
-            <td class="nonevent">recurring</td>
+            <td class="nonevent"></td>
           {%else%}
-            <td class="nonevent">none</td>
+            <td class="nonevent" bgcolor="gray"></td>
           {%endif%}
         {%endfor%}
       </tr>
