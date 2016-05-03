@@ -12,7 +12,11 @@
         Description: <div><textarea name="description" rows="5" cols="30"></textarea></div>
         Invitees: <div><select multiple name="invitees">
             {% if friends %}
-                <option value="friends">friends</option>
+                {% for friend in friends %}
+                    {% if friend.accepted == True %}
+                        <option value="friends">{{friend.username}}</option>
+                    {% endif %}
+                {%endfor%}
             {% else %}
                 <option value="nofriends">no friends</option>
             {% endif %}

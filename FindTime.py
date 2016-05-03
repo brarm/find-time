@@ -82,8 +82,10 @@ class Calendar:
         for event_key in nonrecurring.events:
             event = event_key.get()
             day = event.day
-            # day_index = date.today().weekday()
-            # day = DAYSOFTHEWEEK[day_index]
+            logging.error(day)
+            day_index = day.weekday()
+            logging.error(day_index)
+            day = DAYSOFTHEWEEK[day_index]
             self.daily_events[day].append(event)
         for key in self.daily_events:
             for ev in self.daily_events[key]:
@@ -435,6 +437,7 @@ class EventHandler(SessionsUsers.BaseHandler):
         event_key = event.put()
 
         current_user.user_nonrecurring_calendar.events.append(event_key)
+        current_user.put()
 
         self.redirect("/profile")
 
@@ -489,7 +492,7 @@ webapp2_config = {'webapp2_extras.sessions': {'secret_key': 'secret_key_123', },
 
 app = webapp2.WSGIApplication([
     webapp2.Route(r'/', handler=MainPage, name="main"),
-    webapp2.Route(r'/profile/<profile_id>', handler=ProfilePage, name="profile"),
+    webapp2.Route(r'/profile', handler=ProfilePage, name="profile"),
     webapp2.Route(r'/event/create', handler=EventHandler, name="create-event"),
     webapp2.Route(r'/<event>/modify', handler=EventHandler, name="event"),
     webapp2.Route(r'/login', handler=SessionsUsers.LoginHandler, name='login'),
