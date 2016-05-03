@@ -322,9 +322,14 @@ class RecurringEvents(SessionsUsers.BaseHandler):
         logging.error("^^^^^^^^^^^^^^")
         # blocks will have id in form
         current_user = get_current_user(self)
-
+        logging.error("*** before")
         # blocks will have id in form <letter (a-f) = day of week><number (1-48) = 30 min block>
         event_ids = self.request.get_all('id')
+        e = self.request.get('id')
+        logging.error("*** after: " + str(event_ids))
+        logging.error("*** next: " + str(type(e)))
+        logging.error(str(e))
+        logging.error(self.request.POST)
         day_groups = {}
         # block_groups = {}
 
