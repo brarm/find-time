@@ -87,10 +87,6 @@
 
 	<script>
 	$(document).ready(function(){
-		$(document).ajaxSuccess(function() {
-  		window.location="/"
-	});
-
 		$("table").selectable({
 			filter: ".tdItem",
 			stop: function( event, ui ) {
@@ -110,26 +106,26 @@
 	</script>
 
 	<button class="populate">Submit weekly schedule</button>
-	<script>
-	
 
-	$(".populate").click(function() {
-		schedule = $('.tdItem').filter(function() {
+	<script>
+		function retrieveAllIDs(form) {
+			schedule = $('.tdItem').filter(function() {
 			return ($(this).css('background-color') == 'rgb(0, 0, 255)')
 		});
-		var ids = [];
+		var ids = {};
+		ids['id']=[];
 		$.each(schedule, function(index, value) {
-			ids.push($(value).attr('id'));
+			ids['id'].push($(value).attr('id'));
 		});
-		var url = '/recurring';
-		// async server call
-		$.ajax({
-			url: url,
-			data: {ids},
-			type: 'POST'
-		});
-	});
+			$('form').attr('action', '/recurring' + $.param(ids));
+			console.log( '/recurring' + $.param(ids));
+		}
 	</script>
+
+	<form action="/recurring" method="post">
+		<input type="hidden" name="id" value=String>
+		<div><input type="submit" value="Submit weekly schedule" onclick="return retrieveAllIDs(this.form);"></div>
+	</form>
 	
 	</body>
 </html>

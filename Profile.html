@@ -9,34 +9,34 @@
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-    <link type="text/css" rel="stylesheet" href="/stylesheets/profile.css" />
+    <link type="text/css" rel="stylesheet" href="/stylesheets/css/profile.css" />
 
     <title> Profile Page</title>
     Profile Page <br><br>
 </head>
-{% autoescape true %}
 <body>
 
 <!-- Fixed navbar -->
+    <div>
     <nav class="navbar navbar-default navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <!-- <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
             <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#">Project name</a>
+          </button> -->
+          <a class="navbar-brand" href="#">Find Time</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li class="active"><a href="#">Home</a></li>
             <li><a href="#about">About</a></li>
             <li><a href="#contact">Contact</a></li>
-            <li class="dropdown">
+            <!-- <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-              <ul class="dropdown-menu">
+               <ul class="dropdown-menu">
                 <li><a href="#">Action</a></li>
                 <li><a href="#">Another action</a></li>
                 <li><a href="#">Something else here</a></li>
@@ -45,108 +45,581 @@
                 <li><a href="#">Separated link</a></li>
                 <li><a href="#">One more separated link</a></li>
               </ul>
-            </li>
+            </li> -->
           </ul>
-          <ul class="nav navbar-nav navbar-right">
+          
+          <!-- put search bar here? -->
+
+          <!-- <ul class="nav navbar-nav navbar-right">
             <li><a href="../navbar/">Default</a></li>
             <li><a href="../navbar-static-top/">Static top</a></li>
             <li class="active"><a href="./">Fixed top <span class="sr-only">(current)</span></a></li>
-          </ul>
+          </ul> -->
         </div><!--/.nav-collapse -->
       </div>
     </nav>
+    </div>
 
-    User: {{user_name}} <br>
-    {% if calendar %}
-        Monday events: <br>
-        {% for event in calendar.daily_events['monday'] %}
-            Event #{{loop.index}}
-            Name: {{event.event_name}} <br>
-            Description: {{event.event_description}} <br>
-            Location: {{event.event_location}} <br>
-            Beginning time: {{event.beginning_time}} <br>
-            Ending time: {{event.ending_time}} <br>
-            <br><br>
-        {% endfor %}
-        <br>
+    <script>
+    $(document).ready(function(){
+      var disp = document.getElementsByClassName('container')[1];
+      var grid = document.createElement('table');
+      grid.className = 'calendar';
+      disp.appendChild(grid);
 
-        Tuesday events: <br>
-        {% for event in calendar.daily_events['tuesday'] %}
-            Event #{{loop.index}}
-            Name: {{event.event_name}} <br>
-            Description: {{event.event_description}} <br>
-            Location: {{event.event_location}} <br>
-            Beginning time: {{event.beginning_time}} <br>
-            Ending time: {{event.ending_time}} <br>
-            <br><br>
-        {% endfor %}
-        <br>
+      var user_cal = "{{calendar}}"
+      
+      // header row
+      var col_headers = ['Time','M','T','W','Th','F','Sa','Su'];
 
-        Wednesday events: <br>
-        {% for event in calendar.daily_events['wednesday'] %}
-            Event #{{loop.index}}
-            Name: {{event.event_name}} <br>
-            Description: {{event.event_description}} <br>
-            Location: {{event.event_location}} <br>
-            Beginning time: {{event.beginning_time}} <br>
-            Ending time: {{event.ending_time}} <br>
-            <br><br>
-        {% endfor %}
-        <br>
+      // <thead>
+      //     <tr>
+      //         <th>&nbsp;</th>
+      //         <th width="20%">Sunday</th>
+      //         <th width="20%">Monday</th>
+      //         <th width="20%">Tuesday</th>
+      //         <th width="20%">Wednesday</th>
+      //         <th width="20%">Thursday</th>
+      //     </tr>
+      // </thead>
 
-        Thursday events: <br>
-        {% for event in calendar.daily_events['thursday'] %}
-            Event #{{loop.index}}
-            Name: {{event.event_name}} <br>
-            Description: {{event.event_description}} <br>
-            Location: {{event.event_location}} <br>
-            Beginning time: {{event.beginning_time}} <br>
-            Ending time: {{event.ending_time}} <br>
-            <br><br>
-        {% endfor %}
-        <br>
+      var head = document.createElement('thead');
+      var row = document.createElement('tr');
 
-        Friday events: <br>
-        {% for event in calendar.daily_events['friday'] %}
-            Event #{{loop.index}}
-            Name: {{event.event_name}} <br>
-            Description: {{event.event_description}} <br>
-            Location: {{event.event_location}} <br>
-            Beginning time: {{event.beginning_time}} <br>
-            Ending time: {{event.ending_time}} <br>
-            <br><br>
-        {% endfor %}
-        <br>
+      $.each(col_headers, function( index, value ) {
+        var th = row.appendChild(document.createElement('th'));
+        $(th).text(value);
+      })
 
-        Saturday events: <br>
-        {% for event in calendar.daily_events['saturday'] %}
-            Event #{{loop.index}}
-            Name: {{event.event_name}} <br>
-            Description: {{event.event_description}} <br>
-            Location: {{event.event_location}} <br>
-            Beginning time: {{event.beginning_time}} <br>
-            Ending time: {{event.ending_time}} <br>
-            <br><br>
-        {% endfor %}
-        <br>
+      head.appendChild(row);
+      grid.appendChild(head);
 
-        Sunday events: <br>
-        {% for event in calendar.daily_events['sunday'] %}
-            Event #{{loop.index}}
-            Name: {{event.event_name}} <br>
-            Description: {{event.event_description}} <br>
-            Location: {{event.event_location}} <br>
-            Beginning time: {{event.beginning_time}} <br>
-            Ending time: {{event.ending_time}} <br>
-            <br><br>
-        {% endfor %}
-        <br>
-    {% endif %}
+      console.log(user_cal.daily_events)
+      // $(row).prepend(head)
+      // $(grid).prepend(row);
+    })
+    </script>
 
-    user name: {{user_name}} <br>
-    display name: {{display_name}} <br>
-    relation: {{relation}} <br>
-    feed: {{feed}}
+    <div>
+
+    <div class="jumbotron">
+      <div class="container" id="calendar-container">
+      <!-- generate calendar -->
+      <!--   <script>
+
+          var x = document.getElementsByClassName('panel')[0];
+          var grid = document.createElement('table');
+          grid.className = 'grid';
+            x.appendChild(grid);
+            var day_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+            var col_headers = ['Time','M','T','W','Th','F','Sa','Su'];
+            var hour = 12;
+
+            for(var x=0; x<49; x++) {
+              var tr = grid.appendChild(document.createElement('tr'));
+
+              if(x == 0) {
+                $.each(col_headers, function( index, value ) {
+                  var th = tr.appendChild(document.createElement('th'));
+                  $(th).text(value)
+                })
+              }
+              else {
+                for(var y=0; y<7; y++) {
+                  if(y == 0) {
+                    var th = tr.appendChild(document.createElement('th'));
+                    $(th).text(function() {
+                      var string = ''
+                      if(x % 2 != 0) {
+                        string += hour+ ':00';
+                        hour = (hour+1) % 12;
+                        console.log(hour);
+                        if(hour == 0) hour = 12;
+                      }
+                      return string ;
+                    })
+                  }
+                  var cell = tr.appendChild(document.createElement('td'));
+                  cell.className = 'tdItem';
+                  $(cell).prop("id", day_letters[y] + x);
+                }
+              }
+            }    
+        </script> -->
+        <!-- <table class="calendar table table-bordered">
+          <thead>
+              <tr>
+                  <th>&nbsp;</th>
+                  <th width="20%">Sunday</th>
+                  <th width="20%">Monday</th>
+                  <th width="20%">Tuesday</th>
+                  <th width="20%">Wednesday</th>
+                  <th width="20%">Thursday</th>
+              </tr>
+          </thead>
+          <tbody>
+              <tr>
+                  <td>08:00</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>08:30</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>09:00</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>09:30</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>10:00</td>
+
+                  <td class=" has-events" rowspan="4">
+
+                      <div class="row-fluid lecture" style="width: 99%; height: 100%;">
+
+
+                          <span class="title">Combinatorics</span> <span class="lecturer"><a>Prof.
+                                  Someone</a></span> <span class="location">23/111</span>
+                      </div>
+                  </td>
+
+                  <td class=" has-events" rowspan="4">
+
+                      <div class="row-fluid lecture" style="width: 99%; height: 100%;">
+
+
+                          <span class="title">Algebra 2</span> <span class="lecturer"><a>Prof.
+                                  Else <span class="location">44/654</span>
+
+                      </div>
+                  </td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" has-events" rowspan="4">
+
+                      <div class="row-fluid lecture" style="width: 99%; height: 100%;">
+
+
+                          <span class="title">Data Structures</span> <span class="lecturer"><a>Prof.
+                                  If</a></span> <span class="location">54/222</span>
+                      </div>
+                  </td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>10:30</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>11:00</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>11:30</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>12:00</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" has-events conflicts " rowspan="4">
+
+                      <div class="row-fluid practice" style="width: 49.5%; height: 100%;">
+
+
+                          <span class="title">Algebra 2</span> <span class="lecturer"><a>Mr.
+                                  Someone</a></span> <span class="location">12/444</span>
+                      </div>
+
+                      <div class="row-fluid lecture" style="width: 49.5%; height: 100%;">
+
+
+                          <span class="title">Calculus 1</span> <span class="lecturer"><a>Prof.
+                                  Foo</a></span> <span class="location">66/321</span>
+                      </div>
+                  </td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" has-events" rowspan="4">
+
+                      <div class="row-fluid lecture" style="width: 99%; height: 100%;">
+
+
+                          <span class="title">Algebra 2</span> <span class="lecturer"><a>Prof.
+                                  Oak</a></span> <span class="location">54/224</span>
+                      </div>
+                  </td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>12:30</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>13:00</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>13:30</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>14:00</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" has-events" rowspan="4">
+
+                      <div class="row-fluid lecture" style="width: 99%; height: 100%;">
+
+
+                          <span class="title">Data Structures</span> <span class="lecturer"><a>Prof.
+                                  Oak</a></span> <span class="location">33/111</span>
+                      </div>
+                  </td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" has-events" rowspan="6">
+
+                      <div class="row-fluid lecture" style="width: 99%; height: 100%;">
+
+
+                          <span class="title">Calculus 1</span> <span class="lecturer"><a>Dr.
+                                  Ok</a></span> <span class="location">12/54</span>
+                      </div>
+                  </td>
+
+              </tr>
+              <tr>
+                  <td>14:30</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>15:00</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>15:30</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>16:00</td>
+
+                  <td class=" has-events" rowspan="4">
+
+                      <div class="row-fluid practice" style="width: 99%; height: 100%;">
+
+
+                          <span class="title">Calculus 1</span> <span class="lecturer"><a>Mrs.
+                                  Ak</a></span> <span class="location">54/125</span>
+                      </div>
+                  </td>
+
+                  <td class=" has-events" rowspan="4">
+
+                      <div class="row-fluid lecture" style="width: 99%; height: 100%;">
+
+
+                          <span class="title">Combinatorics</span> <span class="lecturer"><a>Ms.
+                                  Nice</a></span> <span class="location">99/411</span>
+                      </div>
+                  </td>
+
+                  <td class=" has-events" rowspan="4">
+
+                      <div class="row-fluid practice" style="width: 99%; height: 100%;">
+
+
+                          <span class="title">Combinatorics</span> <span class="lecturer"><a>Ms.
+                                  K</a></span> <span class="location">24/900</span>
+                      </div>
+                  </td>
+
+                  <td class=" has-events" rowspan="4">
+
+                      <div class="row-fluid practice" style="width: 99%; height: 100%;">
+
+
+                          <span class="title">Data Structures</span> <span class="lecturer"><a>Mr.
+                                  Ben</a></span> <span class="location">54/214</span>
+                      </div>
+                  </td>
+
+              </tr>
+              <tr>
+                  <td>16:30</td>
+
+              </tr>
+              <tr>
+                  <td>17:00</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>17:30</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>18:00</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>18:30</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>19:00</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+              <tr>
+                  <td>19:30</td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+                  <td class=" no-events" rowspan="1"></td>
+
+              </tr>
+          </tbody>
+      </table> -->
+
+
+
+        <h1>Hello, world!</h1>
+        User: {{user_name}} <br>
+        {% if calendar %}
+            Monday events: <br>
+            {% for event in calendar.daily_events['monday'] %}
+                Event #{{loop.index}}
+                Name: {{event.event_name}} <br>
+                Description: {{event.event_description}} <br>
+                Location: {{event.event_location}} <br>
+                Beginning time: {{event.beginning_time}} <br>
+                Ending time: {{event.ending_time}} <br>
+                <br><br>
+            {% endfor %}
+            <br>
+
+            Tuesday events: <br>
+            {% for event in calendar.daily_events['tuesday'] %}
+                Event #{{loop.index}}
+                Name: {{event.event_name}} <br>
+                Description: {{event.event_description}} <br>
+                Location: {{event.event_location}} <br>
+                Beginning time: {{event.beginning_time}} <br>
+                Ending time: {{event.ending_time}} <br>
+                <br><br>
+            {% endfor %}
+            <br>
+
+            Wednesday events: <br>
+            {% for event in calendar.daily_events['wednesday'] %}
+                Event #{{loop.index}}
+                Name: {{event.event_name}} <br>
+                Description: {{event.event_description}} <br>
+                Location: {{event.event_location}} <br>
+                Beginning time: {{event.beginning_time}} <br>
+                Ending time: {{event.ending_time}} <br>
+                <br><br>
+            {% endfor %}
+            <br>
+
+            Thursday events: <br>
+            {% for event in calendar.daily_events['thursday'] %}
+                Event #{{loop.index}}
+                Name: {{event.event_name}} <br>
+                Description: {{event.event_description}} <br>
+                Location: {{event.event_location}} <br>
+                Beginning time: {{event.beginning_time}} <br>
+                Ending time: {{event.ending_time}} <br>
+                <br><br>
+            {% endfor %}
+            <br>
+
+            Friday events: <br>
+            {% for event in calendar.daily_events['friday'] %}
+                Event #{{loop.index}}
+                Name: {{event.event_name}} <br>
+                Description: {{event.event_description}} <br>
+                Location: {{event.event_location}} <br>
+                Beginning time: {{event.beginning_time}} <br>
+                Ending time: {{event.ending_time}} <br>
+                <br><br>
+            {% endfor %}
+            <br>
+
+            Saturday events: <br>
+            {% for event in calendar.daily_events['saturday'] %}
+                Event #{{loop.index}}
+                Name: {{event.event_name}} <br>
+                Description: {{event.event_description}} <br>
+                Location: {{event.event_location}} <br>
+                Beginning time: {{event.beginning_time}} <br>
+                Ending time: {{event.ending_time}} <br>
+                <br><br>
+            {% endfor %}
+            <br>
+
+            Sunday events: <br>
+            {% for event in calendar.daily_events['sunday'] %}
+                Event #{{loop.index}}
+                Name: {{event.event_name}} <br>
+                Description: {{event.event_description}} <br>
+                Location: {{event.event_location}} <br>
+                Beginning time: {{event.beginning_time}} <br>
+                Ending time: {{event.ending_time}} <br>
+                <br><br>
+            {% endfor %}
+            <br>
+        {% endif %}
+
+        user name: {{user_name}} <br>
+        display name: {{display_name}} <br>
+        relation: {{relation}} <br>
+      </div>
+    </div>
+    </div>
+
 
     {% if relation == 'stranger' %}
         <form action={{friend_behavior[0]}} method="post">
@@ -172,4 +645,3 @@
 
     <a href="/">home page</a><br>
 </body>
-{% endautoescape %}

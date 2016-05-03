@@ -59,9 +59,10 @@ class Calendar:
     """The Calendar class is generated dynamically based on events in the datastore. This object will
     provide functionality to make the javascript display simpler
     """
-    daily_events = {}
+    # daily_events = {}
 
     def __init__(self, user):
+        self.daily_events = {}
         for day in DAYSOFTHEWEEK:
             self.daily_events[day] = []
         if not user.user_recurring_calendar:
@@ -97,6 +98,7 @@ class Calendar:
 
 class ProfilePage(SessionsUsers.BaseHandler):
     def get(self, profile_id=None):
+        logging.error('**************')
         current_user = get_current_user(self)
         if not profile_id:
             dest_user = current_user
@@ -153,7 +155,9 @@ class ProfilePage(SessionsUsers.BaseHandler):
                            "friend_behavior": friend_behavior
                            }
         logging.error('HEREEEEEE')
+
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
+
         self.response.write(template.render(template_values))
 
 class AddFriend(SessionsUsers.BaseHandler):
@@ -219,7 +223,7 @@ class AcceptFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
-        user2 = self.request.get('user1')
+        user2 = self.request.get('user')
         try:
             u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
             user_obj = u2[0]
@@ -272,7 +276,7 @@ class RemoveFriend(SessionsUsers.BaseHandler):
     def post(self):
         user_key = self.auth.get_user_by_session(save_session=True)
         user = DatabaseStructures.MUser.get_by_id(user_key['user_id'])
-        user2 = self.request.get('user2')
+        user2 = self.request.get('user')
         try:
             u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == user2).fetch(1)
             user_obj = u2[0]
@@ -421,9 +425,14 @@ class RecurringEvents(SessionsUsers.BaseHandler):
         logging.error("^^^^^^^^^^^^^^")
         # blocks will have id in form
         current_user = get_current_user(self)
-
+        logging.error("*** before")
         # blocks will have id in form <letter (a-f) = day of week><number (1-48) = 30 min block>
         event_ids = self.request.get_all('id')
+        e = self.request.get('id')
+        logging.error("*** after: " + str(event_ids))
+        logging.error("*** next: " + str(type(e)))
+        logging.error(str(e))
+        logging.error(self.request.POST)
         day_groups = {}
         # block_groups = {}
 
@@ -476,7 +485,6 @@ class RecurringEvents(SessionsUsers.BaseHandler):
             self.session['message'] = 'Recurring Calendar saved'
         
         return self.redirect(self.uri_for('profile-self'))
-
 
 class EventModifier(SessionsUsers.BaseHandler):
     def post(self):
@@ -562,10 +570,11 @@ class EventHandler(SessionsUsers.BaseHandler):
                                                  timestamp=datetime.datetime.now(),
                                                  )
             event.attendees.append(invitee)
-            u = DatabaseStructures.MUser.get_by_id(inv)
-
-            if not current_user.user_nonrecurring_calendar:
+            u2 = DatabaseStructures.MUser.query(DatabaseStructures.MUser.unique_user_name == inv).fetch(1)
+            u = u2[0]
+            if not u.user_nonrecurring_calendar:
                 u.user_nonrecurring_calendar = DatabaseStructures.TemporaryCalendar()
+
             u.user_nonrecurring_calendar.events.append(event_key)
             u.put()
 
