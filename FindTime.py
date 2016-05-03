@@ -60,6 +60,7 @@ class Calendar:
     provide functionality to make the javascript display simpler
     """
     # daily_events = {}
+    # event_blocks = {}
 
     def __init__(self, user):
         self.daily_events = {}
@@ -90,6 +91,21 @@ class Calendar:
             for ev in self.daily_events[key]:
                 if not ev:
                     self.daily_events[key].remove(ev)
+
+        self.event_blocks = {}
+        for day in DAYSOFTHEWEEK:
+            blocks = [None] * 48
+
+            for ev in self.daily_events[day]:
+                start = ev.beginning_time
+                end = ev.ending_time
+                block_range = encode_blocks(start, end)
+                for b in block_range:
+                    blocks[b] = (ev.key, ev.recurring)
+
+            self.event_blocks[day] = blocks
+
+
 
     # more functionality to be added to this class based on javascript requirements
 
