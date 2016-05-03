@@ -14,7 +14,7 @@
 	  	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 	  	<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 	  	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script> -->
-	  	<link type="text/css" rel="stylesheet" href="/stylesheets/css/profile.css" />
+	  	<link type="text/css" rel="stylesheet" href="/stylesheets/css/recurring.css" />
 
 	  	<style>
 		  	#feedback { font-size: 1.4em; }
@@ -107,9 +107,9 @@
     	var col_headers = ['Time','M','T','W','Th','F','Sa','Su'];
     	var hour = 12;
 
-    	var prev = {{ ids|safe }}
-    	var dict = parseIds(prev)
-    	console.log(dict)
+    	var prev = {{ ids|safe }};
+    	var dict = parseIds(prev);
+    	console.log(dict);
 
     	for(var x=0; x<49; x++) {
     		var tr = grid.appendChild(document.createElement('tr'));
