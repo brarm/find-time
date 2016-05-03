@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
+{ % autoescape %}
 	<head>
-		<title>login or signup</title>
+		<title>Recurring Calendar</title>
 		<link rel="stylesheet" type="text/css" href="/stylesheets/css/clickable-grid.css">
 		<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 	  	<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
@@ -25,7 +26,13 @@
 	</head>
 	
 	<body>
-	<script>
+
+	{% if first %}
+		<h2>Please fill out your recurring calendar</h2>
+		Click and drag to indicate which time slots you definitely do not have free time
+	{% endif %}
+
+<!-- 	<script>
 	$(document).ready(function(){
 		$("button.toggle").click(function(){
 			$(".panel").toggle();
@@ -33,7 +40,7 @@
 	});
 	</script>
 
-	<button class="toggle">Fill in Weekly Schedule</button>
+	<button class="toggle">Fill in Weekly Schedule</button> -->
 
 	<div class="panel">
 	</div>
@@ -120,5 +127,5 @@
 	</script>
 	
 	</body>
-
+{ % endautoescape %}
 </html>

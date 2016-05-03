@@ -8,6 +8,8 @@ from webapp2_extras.auth import InvalidAuthIdError
 from webapp2_extras.auth import InvalidPasswordError
 import time
 
+import FindTime
+
 def user_required(handler):
     """
          Decorator for checking if there's a user associated with the current session.
@@ -185,7 +187,9 @@ class CreateUserHandler(BaseHandler):
                 time.sleep(3)
                 self.session['first'] = True
                 self.auth.get_user_by_password(username, password, save_session=True)
-                self.redirect('/')
+                template = {'first':True} # mitigates need for self.session['first'], if it works
+                template = FindTime.JINJA_ENVIRONMENT.get_template('recurring.html')
+                self.response.write(template.render(template_values))
                 # self.redirect(self.uri_for('recurring'))
                 # self.redirect(self.auth_config['login_url'])
             except (AttributeError, KeyError), e:
