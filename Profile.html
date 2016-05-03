@@ -618,15 +618,19 @@
         relation: {{relation}} <br>
           {% for name in feed %}
                 {% if name[1]%}
-                    Friend Request From:
+                    Friend Request From: {{name[0].username}}
+                    <a href="/profile/{{name[0].username}}">{{name[0].username}}</a><br> sent you a friend request
                     Time: {{name[2]}}
-                    <br><br>
                 {% else %}
                     Invitee Request From: {{name[0].owner}}
+                      <form action="/acceptinvite/{{name[0].key.id()}}" method ="post">
+                            <div><input type="submit" value="Add Invitee"></div>
+                      </form>
                     Time: {{name[2]}}
-                    <br><br>
+
                 {% endif %}
           {% endfor %}
+           <br><br>
       </div>
     </div>
     </div>
