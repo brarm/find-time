@@ -732,7 +732,7 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/accept/', handler=AcceptFriend, name='accept-friend'),
     webapp2.Route(r'/accept/<profile_id>', handler=AcceptFriend2, name='accept-friend'),
     webapp2.Route(r'/test', handler=TestPage, name='test'),
-    webapp2.Route(r'/event/view/<unique_id>', handler=EventView, name='view-event')
+    webapp2.Route(r'/event/view/<unique_id>', handler=EventView, name='view-event'),
     webapp2.Route(r'/acceptinvite', handler=AcceptInvite, name='acceptinvite'),
     webapp2.Route(r'/acceptinvite/<unique_id>', handler=AcceptInvite, name='acceptinvite'),
     webapp2.Route(r'/rejectinvite', handler=RejectInvite, name='rejectinvite'),
