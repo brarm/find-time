@@ -41,64 +41,7 @@
 
     
 
-    <script type="text/javascript">
-      function parse_cal() {
-
-      }
-    </script>
-
-    <script>
-    function test_func(data) {
-      console.log(data);
-    }
-
-    $(document).ready(function(){
-      var disp = document.getElementsByClassName('container')[1];
-      var grid = document.createElement('table');
-      grid.className = 'calendar';
-      disp.appendChild(grid);
-
-      var user_cal = "{{ calendar|safe }}"
-
-      var daily_events = " {{ calendar.daily_events['friday']|safe }}"
-      console.log(user_cal)
-      console.log(daily_events)
-      console.log(session['calendar'])
-
-      console.log("fucking shit")
-      // test_func({{ calendar|safe }})
-      
-      // header row
-      var col_headers = ['Time','M','T','W','Th','F','Sa','Su'];
-
-      // <thead>
-      //     <tr>
-      //         <th>&nbsp;</th>
-      //         <th width="20%">Sunday</th>
-      //         <th width="20%">Monday</th>
-      //         <th width="20%">Tuesday</th>
-      //         <th width="20%">Wednesday</th>
-      //         <th width="20%">Thursday</th>
-      //     </tr>
-      // </thead>
-
-      var head = document.createElement('thead');
-      var row = document.createElement('tr');
-
-      $.each(col_headers, function( index, value ) {
-        var th = row.appendChild(document.createElement('th'));
-        $(th).text(value);
-      })
-
-      head.appendChild(row);
-      grid.appendChild(head);
-
-
-      
-      // $(row).prepend(head)
-      // $(grid).prepend(row);
-    })
-    </script>
+    
 
     <!--
     <div id="calendargoeshere"></div>
@@ -677,7 +620,7 @@
         <td>HI</td>
       </tr>
     </table>-->
-
+    {%if calendar != None %}
     <table>
       <tr>
         <th>Time</th>
@@ -704,6 +647,7 @@
       </tr>
     {%endfor%}
     </table>
+    {%endif%}
 
     <p>hello</p>
 
