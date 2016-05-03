@@ -118,7 +118,6 @@ class Calendar:
 
 class ProfilePage(SessionsUsers.BaseHandler):
     def get(self, profile_id=None):
-        logging.error('**************')
         current_user = get_current_user(self)
         if not profile_id:
             dest_user = current_user
@@ -480,7 +479,8 @@ class RecurringEvents(SessionsUsers.BaseHandler):
                 block_nums = encode_blocks(ev.beginning_time, ev.ending_time)
                 for b in block_nums:
                     blocks.append(day + str(b))
-
+        if len(blocks) is 0:
+            template_values = {"ids": [], 'first': self.session.get('first')}
         template_values = {"ids": blocks, 'first': self.session.get('first')}
         template = JINJA_ENVIRONMENT.get_template('recurring.html')
         self.response.write(template.render(template_values))
@@ -552,6 +552,7 @@ class RecurringEvents(SessionsUsers.BaseHandler):
         
         return self.redirect(self.uri_for('profile-self'))
 
+
 class EventModifier(SessionsUsers.BaseHandler):
     def post(self):
         event_key = self.request.get('event_key')
@@ -571,6 +572,36 @@ class EventModifier(SessionsUsers.BaseHandler):
             u.put()
         event.updated = True
         event.put()
+
+
+class EventView(SessionsUsers.BaseHandler):
+    def get(self, unique_id):
+        event = DatabaseStructures.Event.get_by_id(int(unique_id))
+        invitees = event.attendees
+        attendees = [e for e in invitees if e.accepted]
+        if event.recurring:
+            template_values = {'title': "Recurring event",
+                               'owner': "",
+                               'description': "",
+                               'location': "",
+                               'day': event.recurring_day,
+                               'start_time': event.beginning_time,
+                               'end_time': event.ending_time,
+                               'attendees': [],
+                                }
+        else:
+            template_values = {'title': event.event_name,
+                               'owner': event.owner,
+                               'description': event.event_description,
+                               'location': event.event_location,
+                               'day': event.day,
+                               'start_time': event.beginning_time,
+                               'end_time': event.ending_time,
+                               'attendees': attendees,
+                               }
+
+        template = JINJA_ENVIRONMENT.get_template('ViewEvent.html')
+        self.response.write(template.render(template_values))
 
 
 class EventHandler(SessionsUsers.BaseHandler):
@@ -702,6 +733,7 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/accept/', handler=AcceptFriend, name='accept-friend'),
     webapp2.Route(r'/accept/<profile_id>', handler=AcceptFriend2, name='accept-friend'),
     webapp2.Route(r'/test', handler=TestPage, name='test'),
+    webapp2.Route(r'/event/view/<unique_id>', handler=EventView, name='view-event'),
     webapp2.Route(r'/acceptinvite', handler=AcceptInvite, name='acceptinvite'),
     webapp2.Route(r'/acceptinvite/<unique_id>', handler=AcceptInvite, name='acceptinvite'),
     webapp2.Route(r'/rejectinvite', handler=RejectInvite, name='rejectinvite'),
