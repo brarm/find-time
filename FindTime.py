@@ -356,12 +356,14 @@ class RecurringEvents(SessionsUsers.BaseHandler):
                 prev_block = block
 
             for start, end in block_groups:
+                numBlocks = end - start + 1
                 start_time = decode_block(start)
                 end_time = decode_block(end) + datetime.timedelta(minutes=29, seconds=59)
                 event = DatabaseStructures.Event(owner=current_user.unique_user_name,
                                                  beginning_time=start_time,
                                                  ending_time=end_time,
-                                                 recurring=True)
+                                                 recurring=True,
+                                                 num_blocks=numBlocks)
                 event_key = event.put()
                 # ALERT. THIS MAY NOT WORK
                 getattr(current_user.user_nonrecurring_calendar, key).append(event_key)
@@ -374,7 +376,8 @@ class RecurringEvents(SessionsUsers.BaseHandler):
         else:
             self.session['message'] = 'Recurring Calendar saved'
         
-        return self.redirect(self.uri_for('profile'))
+        return self.redirect(self.uri_for('profile-self'))
+
 
 class EventModifier(SessionsUsers.BaseHandler):
     def post(self):
@@ -442,6 +445,11 @@ class EventHandler(SessionsUsers.BaseHandler):
         end_min = int(self.request.get("end_time_min"))
         end_time = datetime.time(end_hr, end_min)
         event.ending_time = end_time
+        num_hr = start_hr - end_hr
+        num_min = start_min - end_min
+        num_blocks = num_hr * 2 + num_min / 30
+        event.num_blocks = num_blocks
+
 
         event_key = event.put()
 
