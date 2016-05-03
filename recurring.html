@@ -26,6 +26,32 @@
 	</head>
 	<body>
 
+	<!-- Fixed navbar -->
+	    <div>
+	    <nav class="navbar navbar-default navbar-fixed-top">
+	      <div class="container">
+	        <div class="navbar-header">
+	          <a class="navbar-brand" href="#">Find Time</a>
+	        </div>
+	        <div id="navbar" class="navbar-collapse collapse">
+	          <ul class="nav navbar-nav">
+	            <li><a href="#">Home</a></li>
+	            <li><a href="/logout">Logout</a></li>
+	            <!-- <li><a href="#contact">Contact</a></li> -->
+	            <li>
+	              <form class="navbar-form form-inline pull-right" action="/search" method="get">
+	                  <input type="text" class="span2" placeholder="Search">
+	                  <input type="submit" value="Search" class="btn"/>
+	              </form>
+	            </li>
+	          </ul>
+	        </div><!--/.nav-collapse -->
+	      </div>
+	    </nav>
+	    </div>
+
+	    
+
 	{% if first %}
 		<h2>Please fill out your recurring calendar</h2>
 		Click and drag to indicate which time slots you definitely do not have free time
@@ -115,7 +141,8 @@
 		$.each(schedule, function(index, value) {
 			ids['id'].push($(value).attr('id'));
 		});
-			$('[name=id]').attr('value', $.param(ids));
+		$('[name=id]').attr('value', $.param(ids));
+
 		}
 	</script>
 
