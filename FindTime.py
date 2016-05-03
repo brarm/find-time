@@ -82,8 +82,8 @@ class Calendar:
         for event_key in nonrecurring.events:
             event = event_key.get()
             day = event.day
-            # day_index = date.today().weekday()
-            # day = DAYSOFTHEWEEK[day_index]
+            day_index = datetime.datetime.today().weekday()
+            day = DAYSOFTHEWEEK[day_index]
             self.daily_events[day].append(event)
         for key in self.daily_events:
             for ev in self.daily_events[key]:
@@ -94,25 +94,26 @@ class Calendar:
 
 
 class ProfilePage(SessionsUsers.BaseHandler):
-    def get(self, profile_id):
+    def get(self):
         current_user = get_current_user(self)
-        dest_user = DatabaseStructures.MUser.get_by_id(profile_id)
+        #dest_user = DatabaseStructures.MUser.get_by_id(profile_id)
 
         relation_state = None
 
-        one_week_cal = Calendar(dest_user)
-        friends_list = dest_user.friends
+        one_week_cal = Calendar(current_user)
+        #one_week_cal = Calendar(dest_user)
+        #friends_list = dest_user.friends
         # dest_user.friends.query(DatabaseStructures.Friend.username == current_user.unique_user_name).fetch()
         # if not empty, grab first element
-        if current_user == dest_user:
-            relation_state = 'same_user'
+        #if current_user == dest_user:
+         #   relation_state = 'same_user'
 
 
         #friends = user_obj.friends
 
         template_values = {"calendar": one_week_cal,
                            "user_name": current_user.unique_user_name,
-                           # "friends": friends
+                           "friends": current_user.friends
                            }
         template = JINJA_ENVIRONMENT.get_template('Profile.html')
         self.response.write(template.render(template_values))
@@ -422,6 +423,7 @@ class EventHandler(SessionsUsers.BaseHandler):
         event_key = event.put()
 
         current_user.user_nonrecurring_calendar.events.append(event_key)
+        current_user.put()
 
         self.redirect("/profile")
 
@@ -476,7 +478,7 @@ webapp2_config = {'webapp2_extras.sessions': {'secret_key': 'secret_key_123', },
 
 app = webapp2.WSGIApplication([
     webapp2.Route(r'/', handler=MainPage, name="main"),
-    webapp2.Route(r'/profile/<profile_id>', handler=ProfilePage, name="profile"),
+    webapp2.Route(r'/profile', handler=ProfilePage, name="profile"),
     webapp2.Route(r'/event/create', handler=EventHandler, name="create-event"),
     webapp2.Route(r'/<event>/modify', handler=EventHandler, name="event"),
     webapp2.Route(r'/login', handler=SessionsUsers.LoginHandler, name='login'),
