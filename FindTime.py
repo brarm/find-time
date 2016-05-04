@@ -170,6 +170,9 @@ class ProfilePage(SessionsUsers.BaseHandler):
                         feed.append(eventTup)
         feed.sort(key=lambda x: x[2])
 
+        logging.error(friends_list)
+        logging.error(feed)
+
         template_values = {"calendar": one_week_cal,
                            "user_name": dest_user.unique_user_name,
                            "display_name": dest_user.display_name,

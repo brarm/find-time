@@ -202,7 +202,7 @@
                                            <tr>
                                            {% if name[1]%}
                                                <td>{{name[0].username}}<br> sent you a friend request </td>
-                                               <td><a href="/profile/{{name[0].username}}">Accept!</a></td>
+                                               <td><a href="/profile/{{name[0].username}}">View Profile</a></td>
                                            {% else %}
                                                
                                                <td>
@@ -224,15 +224,29 @@
                     </div>
                 <!-- </div> -->
                 <!-- side by side panel -->
-                <!-- <div class="col-lg-7 col-md-7 col-sm-7">
+                <div class="col-lg-7 col-md-7 col-sm-7">
                     <div class="panel panel-default">
-                        <div class="panel-heading">panel 2</div>
+                        <div class="panel-heading">Friends</div>
+                          <div class="input-append">
+                            <table class="table table-condensed" id="feed">
+                                <thead>
+                                    <tr>
+                                        <th>New Friends!</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                      {% for friend in friends_list %}
+                                      <tr>
+                                          <td>{{friend[0].username}}<br> </td>
+                                          </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                          </div>
                     </div>
-                </div> -->
+                </div>
             </div>
         
-
-    <!-- feeeed me -->
  <!--    user name: {{user_name}} <br>
      display name: {{display_name}} <br>
      relation: {{relation}} -->
@@ -246,7 +260,7 @@
 
                {% if relation == 'stranger' %}
                    <form action={{friend_behavior[0]}} method="post">
-                     <div><button class="btn btn-lg btn-success" type="submit" value="Add Friend" name="user">View Profile</button></div>
+                     <div><button class="btn btn-lg btn-success" type="submit" value="Add Friend" name="user">Add Friend/button></div>
                    </form>
                {% endif %}
 
