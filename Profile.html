@@ -22,6 +22,92 @@
         margin:0px;
         border: 0px;
     }
+    table#feed th {
+        width:20%;
+        height:30px;
+        background-color: #4CAF50;
+        color: white;
+        border: 0px;
+        text-align: center;
+    }
+    .center {
+         float: none;
+         margin-left: auto;
+         margin-right: auto;
+    }
+    /* Everything but the jumbotron gets side spacing for mobile first views */
+    .header,
+    .marketing,
+    .footer {
+      padding-right: 15px;
+      padding-left: 15px;
+    }
+
+    /* Custom page header */
+    .header {
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    /* Make the masthead heading the same height as the navigation */
+    .header h3 {
+      margin-top: 0;
+      margin-bottom: 0;
+      line-height: 40px;
+    }
+
+    /* Custom page footer */
+    .footer {
+      padding-top: 19px;
+      color: #777;
+      border-top: 1px solid #e5e5e5;
+    }
+
+    /* Customize container */
+    /*@media (min-width: 768px) {
+      .container {
+        max-width: 100%;
+      }
+    }
+    .container-narrow > hr {
+      margin: 30px 0;
+    }*/
+
+    /* Main marketing message and sign up button */
+    .jumbotron {
+      text-align: center;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    .jumbotron .btn {
+      padding: 14px 24px;
+      font-size: 21px;
+    }
+
+    /* Supporting marketing content */
+    .marketing {
+      margin: 40px 0;
+    }
+    .marketing p + h4 {
+      margin-top: 28px;
+    }
+
+    /* Responsive: Portrait tablets and up */
+    @media screen and (min-width: 768px) {
+      /* Remove the padding we set earlier */
+      .header,
+      .marketing,
+      .footer {
+        padding-right: 0;
+        padding-left: 0;
+      }
+      /* Space out the masthead */
+      .header {
+        margin-bottom: 30px;
+      }
+      /* Remove the bottom border on the jumbotron for visual effect */
+      .jumbotron {
+        border-bottom: 0;
+      }
+    }
     </style>
 </head>
 <body>
@@ -40,11 +126,21 @@
             <li><a href="/event/create">Create Event</a></li>
             <li><a href="/recurring">Edit Recurring</a></li>
             <li>
-              <form class="navbar-form form-inline pull-right" action="/search" method="get">
-                  <!--<input type="text" class="span2" placeholder="Search" name="search_input">-->
+            <div class="pull-right">
+                    <form class="navbar-form" role="search" action="/search" method="get">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="search_input" id="search_input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                    </form>
+                    </div>
+              <!-- <form class="navbar-form form-inline pull-right" action="/search" method="get">
+                  <input type="text" class="span2" placeholder="Search" name="search_input">
                   <textarea name="search_input" rows="1" cols="30"></textarea>
                   <input type="submit" value="Search" class="btn"/>
-              </form>
+              </form> -->
             </li>
           </ul>
         </div><!--/.nav-collapse -->
@@ -80,93 +176,96 @@
     </table>
     {%endif%}
 
-    <h3>4. Panel embedding <a href="http://getbootstrap.com/css/#tables" target="_blank">Table</a></h3>
-    <div class="container-fluid">
+    <!-- own page -->
+    {% if relation == 'same_user' %}
 
+    <h3> Feed </h3>
 
-    <!--panel-->
-    <div class="panel panel-primary">
-        <!-- Default panel contents -->
-        <div class="panel-heading">Panel heading</div>
-        <div class="panel-body">
-            <!--table-->
-            <table class="table table-condensed">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Accept!</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for name in feed %}
-             <tr>
-             {% if name[1]%}
-                 <td><a href="/profile/{{name[0].username}}">{{name[0].username}}</a></td>
-                 <td>Time: {{name[2]}}</td>
-              {% else %}
-                 Invitee Request From: {{name[0].owner}}
-                 <td>
-                   <form action="/acceptinvite/{{name[0].key.id()}}" method ="post">
-              <div><input type="submit" value="Add Invitee"></div>
-                   </form></td>
-                 <td>Time: {{name[2]}}</td>
-             {% endif %}
-                 </tr>
-       {% endfor %}
-                </tbody>
-            </table>
-            <!--end of table-->
-        </div>
-    </div>
-    <!--end of panel-->
-    </div>
+    <div class="container">
+        <!-- <div class="panel panel-default"> -->
+<!--            <div class="panel-heading">Feed</div>-->
+             
+                
+                    <div class="panel panel-default span6 center">
+                        <div class="panel-heading">Your Invites and Requests</div>
+                        <div class="input-append">
+                                 <!--table-->
+                                 <table class="table table-condensed" id="feed">
+                                     <thead>
+                                         <tr>
+                                             <th>Name</th>
+                                             <th>Accept!</th>
+                                         </tr>
+                                     </thead>
+                                     <tbody>
+                                            {% for name in feed %}
+                                           <tr>
+                                           {% if name[1]%}
+                                               <td>{{name[0].username}}<br> sent you a friend request </td>
+                                               <td><a href="/profile/{{name[0].username}}">Accept!</a></td>
+                                           {% else %}
+                                               
+                                               <td>
+                                               Invitee Request From: {{name[0].owner}}
+                                                 </td>
+                                               <td><form action="/acceptinvite/{{name[0].key.id()}}" method ="post">
+                                                       <div><input type="submit" value="Add Invitee"></div>
+                                                 </form></td>
+                                           {% endif %}
+                                               </tr>
+                                     {% endfor %}
 
+                                   
+
+                                     </tbody>
+                                 </table>
+                                 <!--end of table-->
+                        </div>
+                    </div>
+                <!-- </div> -->
+                <!-- side by side panel -->
+                <!-- <div class="col-lg-7 col-md-7 col-sm-7">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">panel 2</div>
+                    </div>
+                </div> -->
+            </div>
+        
 
     <!-- feeeed me -->
  <!--    user name: {{user_name}} <br>
      display name: {{display_name}} <br>
      relation: {{relation}} -->
-       <br>
-       <table style="width:100%">
-       {% for name in feed %}
-             <tr>
-             {% if name[1]%}
-                 <td><a href="/profile/{{name[0].username}}">{{name[0].username}}</a><br> sent you a friend request </td>
-                 <td>Time: {{name[2]}}</td>
-             {% else %}
-                 Invitee Request From: {{name[0].owner}}
-                 <td>
-                   <form action="/acceptinvite/{{name[0].key.id()}}" method ="post">
-                         <div><input type="submit" value="Add Invitee"></div>
-                   </form></td>
-                 <td>Time: {{name[2]}}</td>
-             {% endif %}
-                 </tr>
-       {% endfor %}
-       </table>
+       <!-- friend's page -->
+       {% else %}
 
        <!-- friend requests -->
 
+       <div class="jumbotron">
+               <h1>{{display_name}}</h1>
 
-    {% if relation == 'stranger' %}
-        <form action={{friend_behavior[0]}} method="post">
-          <div><input type="submit" value="Add Friend" name="user"></div>
-        </form>
-    {% endif %}
+               {% if relation == 'stranger' %}
+                   <form action={{friend_behavior[0]}} method="post">
+                     <div><button class="btn btn-lg btn-success" type="submit" value="Add Friend" name="user">View Profile</button></div>
+                   </form>
+               {% endif %}
 
-    {% if relation == 'cancel' %}
-        <form action={{friend_behavior[0]}} method="post">
-          <div><input type="submit" value="Cancel Friend Request" name="user"></div>
-        </form>
-    {% endif %}
+               {% if relation == 'cancel' %}
+                   <form action={{friend_behavior[0]}} method="post">
+                     <div><button class="btn btn-lg btn-warning" type="submit" value="Cancel Friend Request" name="user">Cancel Request</div>
+                   </form>
+               {% endif %}
 
-    {% if relation == 'accept/cancel' %}
-        <form action={{friend_behavior[0]}} method="post">
-          <div><input type="submit" value="Accept Friend Request" name="user"></div>
-        </form>
-        <form action={{friend_behavior[1]}} method="post">
-          <div><input type="submit" value="Deny Friend Request" name="user"></div>
-        </form>
+               {% if relation == 'accept/cancel' %}
+                   <form action={{friend_behavior[0]}} method="post">
+                     <div><button class="btn btn-lg btn-success" type="submit" value="Accept Friend Request" name="user">Accept Friend Request</button></div>
+                   </form>
+                   <form action={{friend_behavior[1]}} method="post">
+                     <div><button class="btn btn-lg btn-danger" type="submit" value="Deny Friend Request" name="user">Deny Friend Request</button></div>
+                   </form>
+               {% endif %}
+      </div>
+
     {% endif %}
 
 </body>
