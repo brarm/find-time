@@ -235,9 +235,9 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                      {% for friend in friends_list %}
+                                      {% for friend in friends %}
                                       <tr>
-                                          <td>{{friend[0].username}}<br> </td>
+                                          <td><td><a href="/profile/{{friend.username}}">{{friend.username}}</a></td><br> </td>
                                           </tr>
                                 {% endfor %}
                                 </tbody>
